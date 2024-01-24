@@ -350,7 +350,6 @@ class EditGenerator:
     @staticmethod
     def edit_list_from_file(_source: str, _data: str, _shared_edit_data: Any) -> List[Edit]:
         raise RuntimeError("This function must be overridden by it's subclass!")
-        return []
 
     @staticmethod
     def setup() -> Any:
