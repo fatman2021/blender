@@ -73,7 +73,6 @@ def socket_idname_to_attribute_type(idname):
     elif idname.startswith("NodeSocketFloat"):
         return "FLOAT"
     raise ValueError("Unsupported socket type")
-    return ""
 
 
 def modifier_attribute_name_get(modifier, identifier):

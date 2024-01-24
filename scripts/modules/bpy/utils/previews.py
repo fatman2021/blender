@@ -61,7 +61,6 @@ class ImagePreviewCollection(dict):
         raise ResourceWarning(
             "%r: left open, remove with 'bpy.utils.previews.remove()'" % self
         )
-        self.close()
 
     def _gen_key(self, name):
         return ":".join((self._uuid, name))
