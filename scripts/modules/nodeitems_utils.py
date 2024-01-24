@@ -3,6 +3,7 @@ import bpy
 
 
 class NodeCategory:
+
     @classmethod
     def poll(cls, _context):
         return True
@@ -17,16 +18,19 @@ class NodeCategory:
         elif callable(items):
             self.items = items
         else:
+
             def items_gen(context):
                 for item in items:
-                    if item.poll is None or context is None or item.poll(context):
+                    if item.poll is None or context is None or item.poll(
+                            context):
                         yield item
+
             self.items = items_gen
 
 
 class NodeItem:
-    def __init__(self, nodetype, *, label=None, settings=None, poll=None):
 
+    def __init__(self, nodetype, *, label=None, settings=None, poll=None):
         if settings is None:
             settings = {}
 
@@ -63,7 +67,9 @@ class NodeItem:
     # NodeItemCustom sets this as a variable attribute in __init__
     @staticmethod
     def draw(self, layout, _context):
-        props = layout.operator("node.add_node", text=self.label, text_ctxt=self.translation_context)
+        props = layout.operator("node.add_node",
+                                text=self.label,
+                                text_ctxt=self.translation_context)
         props.type = self.nodetype
         props.use_transform = True
 
@@ -74,6 +80,7 @@ class NodeItem:
 
 
 class NodeItemCustom:
+
     def __init__(self, *, poll=None, draw=None):
         self.poll = poll
         self.draw = draw
@@ -84,7 +91,8 @@ _node_categories = {}
 
 def register_node_categories(identifier, cat_list):
     if identifier in _node_categories:
-        raise KeyError("Node categories list '%s' already registered" % identifier)
+        raise KeyError("Node categories list '%s' already registered" %
+                       identifier)
 
     # works as draw function for menus
     def draw_node_item(self, context):
@@ -95,13 +103,17 @@ def register_node_categories(identifier, cat_list):
 
     menu_types = []
     for cat in cat_list:
-        menu_type = type("NODE_MT_category_" + cat.identifier, (bpy.types.Menu,), {
-            "bl_space_type": 'NODE_EDITOR',
-            "bl_label": cat.name,
-            "category": cat,
-            "poll": cat.poll,
-            "draw": draw_node_item,
-        })
+        menu_type = type(
+            "NODE_MT_category_" + cat.identifier,
+            (bpy.types.Menu, ),
+            {
+                "bl_space_type": "NODE_EDITOR",
+                "bl_label": cat.name,
+                "category": cat,
+                "poll": cat.poll,
+                "draw": draw_node_item,
+            },
+        )
 
         menu_types.append(menu_type)
 

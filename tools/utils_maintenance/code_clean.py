@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-or-later
-
 """
 Example:
   ./tools/utils/code_clean.py /src/cmake_debug --match ".*/editmesh_.*" --fix=use_const_vars
@@ -10,23 +9,12 @@ we could change this if it's needed.
 """
 
 import argparse
+import os
 import re
+import string
 import subprocess
 import sys
-import os
-import string
-
-from typing import (
-    Any,
-    Dict,
-    Generator,
-    List,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Type,
-)
+from typing import Any, Dict, Generator, List, Optional, Sequence, Set, Tuple, Type
 
 # List of (source_file, all_arguments)
 ProcessedCommands = List[Tuple[str, str]]
@@ -45,11 +33,9 @@ VERBOSE_COMPILER = False
 # - Succeeds.
 VERBOSE_EDIT_ACTION = False
 
-
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 SOURCE_DIR = os.path.normpath(os.path.join(BASE_DIR, "..", ".."))
-
 
 # -----------------------------------------------------------------------------
 # Generic Constants
@@ -87,25 +73,26 @@ BUILT_IN_NUMERIC_TYPES = (
 
 IDENTIFIER_CHARS = set(string.ascii_letters + "_" + string.digits)
 
-
 # -----------------------------------------------------------------------------
 # General Utilities
 
+
 # Note that we could use a hash, however there is no advantage, compare it's contents.
 def file_as_bytes(filename: str) -> bytes:
-    with open(filename, 'rb') as fh:
+    with open(filename, "rb") as fh:
         return fh.read()
 
 
 def line_from_span(text: str, start: int, end: int) -> str:
-    while start > 0 and text[start - 1] != '\n':
+    while start > 0 and text[start - 1] != "\n":
         start -= 1
-    while end < len(text) and text[end] != '\n':
+    while end < len(text) and text[end] != "\n":
         end += 1
     return text[start:end]
 
 
-def files_recursive_with_ext(path: str, ext: Tuple[str, ...]) -> Generator[str, None, None]:
+def files_recursive_with_ext(
+        path: str, ext: Tuple[str, ...]) -> Generator[str, None, None]:
     for dirpath, dirnames, filenames in os.walk(path):
         # skip '.git' and other dot-files.
         dirnames[:] = [d for d in dirnames if not d.startswith(".")]
@@ -115,11 +102,11 @@ def files_recursive_with_ext(path: str, ext: Tuple[str, ...]) -> Generator[str, 
 
 
 def text_matching_bracket_forward(
-        data: str,
-        pos_beg: int,
-        pos_limit: int,
-        beg_bracket: str,
-        end_bracket: str,
+    data: str,
+    pos_beg: int,
+    pos_limit: int,
+    beg_bracket: str,
+    end_bracket: str,
 ) -> int:
     """
     Return the matching bracket or -1.
@@ -147,11 +134,11 @@ def text_matching_bracket_forward(
 
 
 def text_matching_bracket_backward(
-        data: str,
-        pos_end: int,
-        pos_limit: int,
-        beg_bracket: str,
-        end_bracket: str,
+    data: str,
+    pos_end: int,
+    pos_limit: int,
+    beg_bracket: str,
+    end_bracket: str,
 ) -> int:
     """
     Return the matching bracket or -1.
@@ -181,6 +168,7 @@ def text_matching_bracket_backward(
 # -----------------------------------------------------------------------------
 # Execution Wrappers
 
+
 def run(args: Sequence[str], *, cwd: Optional[str], quiet: bool) -> int:
     if VERBOSE_COMPILER and not quiet:
         out = sys.stdout.fileno()
@@ -200,11 +188,12 @@ def run(args: Sequence[str], *, cwd: Optional[str], quiet: bool) -> int:
 # -----------------------------------------------------------------------------
 # Build System Access
 
+
 def cmake_cache_var(cmake_dir: str, var: str) -> Optional[str]:
-    with open(os.path.join(cmake_dir, "CMakeCache.txt"), encoding='utf-8') as cache_file:
+    with open(os.path.join(cmake_dir, "CMakeCache.txt"),
+              encoding="utf-8") as cache_file:
         lines = [
-            l_strip for l in cache_file
-            if (l_strip := l.strip())
+            l_strip for l in cache_file if (l_strip := l.strip())
             if not l_strip.startswith(("//", "#"))
         ]
 
@@ -230,7 +219,8 @@ def cmake_cache_var_is_true(cmake_var: Optional[str]) -> bool:
 RE_CFILE_SEARCH = re.compile(r"\s\-c\s([\S]+)")
 
 
-def process_commands(cmake_dir: str, data: Sequence[str]) -> Optional[ProcessedCommands]:
+def process_commands(cmake_dir: str,
+                     data: Sequence[str]) -> Optional[ProcessedCommands]:
     compiler_c = cmake_cache_var(cmake_dir, "CMAKE_C_COMPILER")
     compiler_cxx = cmake_cache_var(cmake_dir, "CMAKE_CXX_COMPILER")
     if compiler_c is None:
@@ -243,16 +233,15 @@ def process_commands(cmake_dir: str, data: Sequence[str]) -> Optional[ProcessedC
     # Check for unsupported configurations.
     for arg in ("WITH_UNITY_BUILD", "WITH_COMPILER_CCACHE"):
         if cmake_cache_var_is_true(cmake_cache_var(cmake_dir, arg)):
-            sys.stderr.write("The option '%s' must be disabled for proper functionality\n" % arg)
+            sys.stderr.write(
+                "The option '%s' must be disabled for proper functionality\n" %
+                arg)
             return None
 
     file_args = []
 
     for l in data:
-        if (
-                (compiler_c in l) or
-                (compiler_cxx in l)
-        ):
+        if (compiler_c in l) or (compiler_cxx in l):
             # Extract:
             #   -c SOME_FILE
             c_file_search = re.search(RE_CFILE_SEARCH, l)
@@ -270,12 +259,13 @@ def process_commands(cmake_dir: str, data: Sequence[str]) -> Optional[ProcessedC
 
 def find_build_args_ninja(build_dir: str) -> Optional[ProcessedCommands]:
     import time
+
     cmake_dir = build_dir
     make_exe = "ninja"
     with subprocess.Popen(
         [make_exe, "-t", "commands"],
-        stdout=subprocess.PIPE,
-        cwd=build_dir,
+            stdout=subprocess.PIPE,
+            cwd=build_dir,
     ) as proc:
         while proc.poll():
             time.sleep(1)
@@ -290,11 +280,12 @@ def find_build_args_ninja(build_dir: str) -> Optional[ProcessedCommands]:
 
 def find_build_args_make(build_dir: str) -> Optional[ProcessedCommands]:
     import time
+
     make_exe = "make"
     with subprocess.Popen(
         [make_exe, "--always-make", "--dry-run", "--keep-going", "VERBOSE=1"],
-        stdout=subprocess.PIPE,
-        cwd=build_dir,
+            stdout=subprocess.PIPE,
+            cwd=build_dir,
     ) as proc:
         while proc.poll():
             time.sleep(1)
@@ -321,22 +312,20 @@ def find_build_args_make(build_dir: str) -> Optional[ProcessedCommands]:
 # Although this seems like it's not a common use-case.
 
 from collections import namedtuple
+
 Edit = namedtuple(
-    "Edit", (
+    "Edit",
+    (
         # Keep first, for sorting.
         "span",
-
         "content",
         "content_fail",
-
         # Optional.
         "extra_build_args",
     ),
-
     defaults=(
         # `extra_build_args`.
-        None,
-    )
+        None, ),
 )
 del namedtuple
 
@@ -348,8 +337,10 @@ class EditGenerator:
         raise RuntimeError("%s should not be instantiated" % cls)
 
     @staticmethod
-    def edit_list_from_file(_source: str, _data: str, _shared_edit_data: Any) -> List[Edit]:
-        raise RuntimeError("This function must be overridden by it's subclass!")
+    def edit_list_from_file(_source: str, _data: str,
+                            _shared_edit_data: Any) -> List[Edit]:
+        raise RuntimeError(
+            "This function must be overridden by it's subclass!")
 
     @staticmethod
     def setup() -> Any:
@@ -372,30 +363,40 @@ class edit_generators:
         With:
           sizeof(float[4][4])
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
-            for match in re.finditer(r"sizeof\(([a-zA-Z_]+)\) \* (\d+) \* (\d+)", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='sizeof(%s[%s][%s])' % (match.group(1), match.group(2), match.group(3)),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+            for match in re.finditer(
+                    r"sizeof\(([a-zA-Z_]+)\) \* (\d+) \* (\d+)", data):
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="sizeof(%s[%s][%s])" %
+                        (match.group(1), match.group(2), match.group(3)),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             for match in re.finditer(r"sizeof\(([a-zA-Z_]+)\) \* (\d+)", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='sizeof(%s[%s])' % (match.group(1), match.group(2)),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="sizeof(%s[%s])" %
+                        (match.group(1), match.group(2)),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
-            for match in re.finditer(r"\b(\d+) \* sizeof\(([a-zA-Z_]+)\)", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='sizeof(%s[%s])' % (match.group(2), match.group(1)),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+            for match in re.finditer(r"\b(\d+) \* sizeof\(([a-zA-Z_]+)\)",
+                                     data):
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="sizeof(%s[%s])" %
+                        (match.group(2), match.group(1)),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
             return edits
 
     class use_const(EditGenerator):
@@ -424,25 +425,34 @@ class edit_generators:
         With:
           (const float (*))
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
             # `float abc[3] = {0, 1, 2};` -> `const float abc[3] = {0, 1, 2};`
-            for match in re.finditer(r"(\(|, |  )([a-zA-Z_0-9]+ [a-zA-Z_0-9]+\[)\b([^\n]+ = )", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='%s const %s%s' % (match.group(1), match.group(2), match.group(3)),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+            for match in re.finditer(
+                    r"(\(|, |  )([a-zA-Z_0-9]+ [a-zA-Z_0-9]+\[)\b([^\n]+ = )",
+                    data):
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="%s const %s%s" %
+                        (match.group(1), match.group(2), match.group(3)),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             # `float abc[3]` -> `const float abc[3]`
-            for match in re.finditer(r"(\(|, )([a-zA-Z_0-9]+ [a-zA-Z_0-9]+\[)", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='%s const %s' % (match.group(1), match.group(2)),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+            for match in re.finditer(r"(\(|, )([a-zA-Z_0-9]+ [a-zA-Z_0-9]+\[)",
+                                     data):
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="%s const %s" %
+                        (match.group(1), match.group(2)),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             # `(float *)`      -> `(const float *)`
             # `(float (*))`    -> `(const float (*))`
@@ -454,11 +464,17 @@ class edit_generators:
                     r"(|\[[a-zA-Z_0-9]+\])",
                     data,
             ):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='%sconst %s%s%s' % (match.group(1), match.group(2), match.group(3), match.group(4)),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="%sconst %s%s%s" % (
+                            match.group(1),
+                            match.group(2),
+                            match.group(3),
+                            match.group(4),
+                        ),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             return edits
 
@@ -476,25 +492,29 @@ class edit_generators:
         With:
           1.0f
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
             # `1.f` -> `1.0f`
             for match in re.finditer(r"\b(\d+)\.([fF])\b", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='%s.0%s' % (match.group(1), match.group(2)),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="%s.0%s" % (match.group(1), match.group(2)),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             # `1.0F` -> `1.0f`
             for match in re.finditer(r"\b(\d+\.\d+)F\b", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='%sf' % (match.group(1),),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="%sf" % (match.group(1), ),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             return edits
 
@@ -507,26 +527,30 @@ class edit_generators:
         With:
           uint
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
             # `unsigned char` -> `uchar`.
             for match in re.finditer(r"(unsigned)\s+([a-z]+)", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='u%s' % match.group(2),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="u%s" % match.group(2),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             # There may be some remaining uses of `unsigned` without any integer type afterwards.
             # `unsigned` -> `uint`.
             for match in re.finditer(r"\bunsigned\b", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='uint',
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="uint",
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             return edits
 
@@ -539,8 +563,10 @@ class edit_generators:
         With:
           nullptr
         """
+
         @staticmethod
-        def edit_list_from_file(source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits: List[Edit] = []
 
             # The user might include C & C++, if they forget, it is better not to operate on C.
@@ -549,20 +575,22 @@ class edit_generators:
 
             # `NULL` -> `nullptr`.
             for match in re.finditer(r"\bNULL\b", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='nullptr',
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="nullptr",
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             # There may be some remaining uses of `unsigned` without any integer type afterwards.
             # `unsigned` -> `uint`.
             for match in re.finditer(r"\bunsigned\b", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='uint',
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="uint",
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             return edits
 
@@ -575,8 +603,10 @@ class edit_generators:
         With:
           void function(int /*arg*/) {...}
         """
+
         @staticmethod
-        def edit_list_from_file(source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits: List[Edit] = []
 
             # The user might include C & C++, if they forget, it is better not to operate on C.
@@ -597,11 +627,13 @@ class edit_generators:
                     r"\)",
                     data,
             ):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='/*%s*/%s' % (match.group(2), match.group(3)),
-                    content_fail='__ALWAYS_FAIL__(%s%s)' % (match.group(2), match.group(3)),
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="/*%s*/%s" % (match.group(2), match.group(3)),
+                        content_fail="__ALWAYS_FAIL__(%s%s)" %
+                        (match.group(2), match.group(3)),
+                    ))
 
             return edits
 
@@ -616,40 +648,45 @@ class edit_generators:
           (ELEM(a, b, c))
           (!ELEM(a, b, c))
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
             for use_brackets in (True, False):
-
                 test_equal = (
-                    r'([^\|\(\)]+)'  # group 1 (no (|))
-                    r'\s+==\s+'
-                    r'([^\|\(\)]+)'  # group 2 (no (|))
+                    r"([^\|\(\)]+)"  # group 1 (no (|))
+                    r"\s+==\s+"
+                    r"([^\|\(\)]+)"  # group 2 (no (|))
                 )
 
                 test_not_equal = (
-                    r'([^\|\(\)]+)'  # group 1 (no (|))
-                    r'\s+!=\s+'
-                    r'([^\|\(\)]+)'  # group 2 (no (|))
+                    r"([^\|\(\)]+)"  # group 1 (no (|))
+                    r"\s+!=\s+"
+                    r"([^\|\(\)]+)"  # group 2 (no (|))
                 )
 
                 if use_brackets:
-                    test_equal = r'\(' + test_equal + r'\)'
-                    test_not_equal = r'\(' + test_not_equal + r'\)'
+                    test_equal = r"\(" + test_equal + r"\)"
+                    test_not_equal = r"\(" + test_not_equal + r"\)"
 
                 for is_equal in (True, False):
                     for n in reversed(range(2, 64)):
                         if is_equal:
-                            re_str = r'\(' + r'\s+\|\|\s+'.join([test_equal] * n) + r'\)'
+                            re_str = (r"\(" +
+                                      r"\s+\|\|\s+".join([test_equal] * n) +
+                                      r"\)")
                         else:
-                            re_str = r'\(' + r'\s+\&\&\s+'.join([test_not_equal] * n) + r'\)'
+                            re_str = (r"\(" + r"\s+\&\&\s+".join(
+                                [test_not_equal] * n) + r"\)")
 
                         for match in re.finditer(re_str, data):
                             var = match.group(1)
                             var_rest = []
                             groups = match.groups()
-                            groups_paired = [(groups[i * 2], groups[i * 2 + 1]) for i in range(len(groups) // 2)]
+                            groups_paired = [(groups[i * 2], groups[i * 2 + 1])
+                                             for i in range(len(groups) // 2)]
                             found = True
                             for a, b in groups_paired:
                                 # Unlikely but possible the checks are swapped.
@@ -662,21 +699,22 @@ class edit_generators:
                                 var_rest.append(b)
 
                             if found:
-                                edits.append(Edit(
-                                    span=match.span(),
-                                    content='(%sELEM(%s, %s))' % (
-                                        ('' if is_equal else '!'),
-                                        var,
-                                        ', '.join(var_rest),
-                                    ),
-                                    # Use same expression otherwise this can change values
-                                    # inside assert when it shouldn't.
-                                    content_fail='(%s__ALWAYS_FAIL__(%s, %s))' % (
-                                        ('' if is_equal else '!'),
-                                        var,
-                                        ', '.join(var_rest),
-                                    ),
-                                ))
+                                edits.append(
+                                    Edit(
+                                        span=match.span(),
+                                        content="(%sELEM(%s, %s))" % (
+                                            ("" if is_equal else "!"),
+                                            var,
+                                            ", ".join(var_rest),
+                                        ),
+                                        # Use same expression otherwise this can change values
+                                        # inside assert when it shouldn't.
+                                        content_fail="(%s__ALWAYS_FAIL__(%s, %s))" % (
+                                            ("" if is_equal else "!"),
+                                            var,
+                                            ", ".join(var_rest),
+                                        ),
+                                    ))
 
             return edits
 
@@ -689,47 +727,50 @@ class edit_generators:
         With:
           (STR_ELEM(a, b, c))
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
             for use_brackets in (True, False):
-
                 test_equal = (
-                    r'STREQ'
-                    r'\('
-                    r'([^\|\(\),]+)'  # group 1 (no (|,))
-                    r',\s+'
-                    r'([^\|\(\),]+)'  # group 2 (no (|,))
-                    r'\)'
-                )
+                    r"STREQ"
+                    r"\("
+                    r"([^\|\(\),]+)"  # group 1 (no (|,))
+                    r",\s+"
+                    r"([^\|\(\),]+)"  # group 2 (no (|,))
+                    r"\)")
 
                 test_not_equal = (
-                    '!'  # Only difference.
-                    r'STREQ'
-                    r'\('
-                    r'([^\|\(\),]+)'  # group 1 (no (|,))
-                    r',\s+'
-                    r'([^\|\(\),]+)'  # group 2 (no (|,))
-                    r'\)'
-                )
+                    "!"  # Only difference.
+                    r"STREQ"
+                    r"\("
+                    r"([^\|\(\),]+)"  # group 1 (no (|,))
+                    r",\s+"
+                    r"([^\|\(\),]+)"  # group 2 (no (|,))
+                    r"\)")
 
                 if use_brackets:
-                    test_equal = r'\(' + test_equal + r'\)'
-                    test_not_equal = r'\(' + test_not_equal + r'\)'
+                    test_equal = r"\(" + test_equal + r"\)"
+                    test_not_equal = r"\(" + test_not_equal + r"\)"
 
                 for is_equal in (True, False):
                     for n in reversed(range(2, 64)):
                         if is_equal:
-                            re_str = r'\(' + r'\s+\|\|\s+'.join([test_equal] * n) + r'\)'
+                            re_str = (r"\(" +
+                                      r"\s+\|\|\s+".join([test_equal] * n) +
+                                      r"\)")
                         else:
-                            re_str = r'\(' + r'\s+\&\&\s+'.join([test_not_equal] * n) + r'\)'
+                            re_str = (r"\(" + r"\s+\&\&\s+".join(
+                                [test_not_equal] * n) + r"\)")
 
                         for match in re.finditer(re_str, data):
                             var = match.group(1)
                             var_rest = []
                             groups = match.groups()
-                            groups_paired = [(groups[i * 2], groups[i * 2 + 1]) for i in range(len(groups) // 2)]
+                            groups_paired = [(groups[i * 2], groups[i * 2 + 1])
+                                             for i in range(len(groups) // 2)]
                             found = True
                             for a, b in groups_paired:
                                 # Unlikely but possible the checks are swapped.
@@ -742,21 +783,22 @@ class edit_generators:
                                 var_rest.append(b)
 
                             if found:
-                                edits.append(Edit(
-                                    span=match.span(),
-                                    content='(%sSTR_ELEM(%s, %s))' % (
-                                        ('' if is_equal else '!'),
-                                        var,
-                                        ', '.join(var_rest),
-                                    ),
-                                    # Use same expression otherwise this can change values
-                                    # inside assert when it shouldn't.
-                                    content_fail='(%s__ALWAYS_FAIL__(%s, %s))' % (
-                                        ('' if is_equal else '!'),
-                                        var,
-                                        ', '.join(var_rest),
-                                    ),
-                                ))
+                                edits.append(
+                                    Edit(
+                                        span=match.span(),
+                                        content="(%sSTR_ELEM(%s, %s))" % (
+                                            ("" if is_equal else "!"),
+                                            var,
+                                            ", ".join(var_rest),
+                                        ),
+                                        # Use same expression otherwise this can change values
+                                        # inside assert when it shouldn't.
+                                        content_fail="(%s__ALWAYS_FAIL__(%s, %s))" % (
+                                            ("" if is_equal else "!"),
+                                            var,
+                                            ", ".join(var_rest),
+                                        ),
+                                    ))
 
             return edits
 
@@ -769,8 +811,10 @@ class edit_generators:
         With:
           const float abc[3] = {0, 1, 2};
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
             # for match in re.finditer(r"(  [a-zA-Z0-9_]+ [a-zA-Z0-9_]+ = [A-Z][A-Z_0-9_]*;)", data):
@@ -780,12 +824,14 @@ class edit_generators:
             #         content_fail='__ALWAYS_FAIL__',
             #     ))
 
-            for match in re.finditer(r"(  [a-zA-Z0-9_]+ [a-zA-Z0-9_]+ = .*;)", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='const %s' % (match.group(1).lstrip()),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+            for match in re.finditer(r"(  [a-zA-Z0-9_]+ [a-zA-Z0-9_]+ = .*;)",
+                                     data):
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="const %s" % (match.group(1).lstrip()),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             return edits
 
@@ -798,17 +844,20 @@ class edit_generators:
         With:
           Foo
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
             # Remove `struct`
             for match in re.finditer(r"\bstruct\b", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content=' ',
-                    content_fail=' __ALWAYS_FAIL__ ',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content=" ",
+                        content_fail=" __ALWAYS_FAIL__ ",
+                    ))
             return edits
 
     class remove_return_parens(EditGenerator):
@@ -820,17 +869,20 @@ class edit_generators:
         With:
           return value;
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
             # Remove `return (NULL);`
             for match in re.finditer(r"return \(([a-zA-Z_0-9]+)\);", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='return %s;' % (match.group(1)),
-                    content_fail='return __ALWAYS_FAIL__;',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="return %s;" % (match.group(1)),
+                        content_fail="return __ALWAYS_FAIL__;",
+                    ))
             return edits
 
     class use_streq_macro(EditGenerator):
@@ -847,37 +899,43 @@ class edit_generators:
         With:
           !STREQ(a, b)
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
             # `strcmp(a, b) == 0` -> `STREQ(a, b)`
             for match in re.finditer(r"\bstrcmp\((.*)\) == 0", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='STREQ(%s)' % (match.group(1)),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="STREQ(%s)" % (match.group(1)),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
             for match in re.finditer(r"!strcmp\((.*)\)", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='STREQ(%s)' % (match.group(1)),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="STREQ(%s)" % (match.group(1)),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             # `strcmp(a, b) != 0` -> `!STREQ(a, b)`
             for match in re.finditer(r"\bstrcmp\((.*)\) != 0", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='!STREQ(%s)' % (match.group(1)),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="!STREQ(%s)" % (match.group(1)),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
             for match in re.finditer(r"\bstrcmp\((.*)\)", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='!STREQ(%s)' % (match.group(1)),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="!STREQ(%s)" % (match.group(1)),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             return edits
 
@@ -895,52 +953,58 @@ class edit_generators:
         With:
           SNPRINTF(a, "format %s", b)
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
             # `BLI_strncpy(a, b, sizeof(a))` -> `STRNCPY(a, b)`
             # `BLI_strncpy(a, b, SOME_ID)` -> `STRNCPY(a, b)`
             for src, dst in (
-                    ("BLI_strncpy", "STRNCPY"),
-                    ("BLI_strncpy_rlen", "STRNCPY_RLEN"),
-                    ("BLI_strncpy_utf8", "STRNCPY_UTF8"),
-                    ("BLI_strncpy_utf8_rlen", "STRNCPY_UTF8_RLEN"),
+                ("BLI_strncpy", "STRNCPY"),
+                ("BLI_strncpy_rlen", "STRNCPY_RLEN"),
+                ("BLI_strncpy_utf8", "STRNCPY_UTF8"),
+                ("BLI_strncpy_utf8_rlen", "STRNCPY_UTF8_RLEN"),
             ):
                 for match in re.finditer(
-                        (r"\b" + src + (
-                            r"\(([^,]+,\s+[^,]+),\s+" r"("
+                    (
+                        r"\b" + src + (
+                            r"\(([^,]+,\s+[^,]+),\s+"
+                            r"("
                             r"sizeof\([^\(\)]+\)"  # Trailing `sizeof(..)`.
                             r"|"
                             r"[a-zA-Z0-9_]+"  # Trailing identifier (typically a define).
-                            r")" r"\)"
-                        )),
+                            r")"
+                            r"\)")),
                         data,
                         flags=re.MULTILINE,
                 ):
-                    edits.append(Edit(
-                        span=match.span(),
-                        content='%s(%s)' % (dst, match.group(1)),
-                        content_fail='__ALWAYS_FAIL__',
-                    ))
+                    edits.append(
+                        Edit(
+                            span=match.span(),
+                            content="%s(%s)" % (dst, match.group(1)),
+                            content_fail="__ALWAYS_FAIL__",
+                        ))
 
             # `BLI_snprintf(a, SOME_SIZE, ...` -> `SNPRINTF(a, ...`
             for src, dst in (
-                    ("BLI_snprintf", "SNPRINTF"),
-                    ("BLI_snprintf_rlen", "SNPRINTF_RLEN"),
-                    ("BLI_vsnprintf", "VSNPRINTF"),
-                    ("BLI_vsnprintf_rlen", "VSNPRINTF_RLEN"),
+                ("BLI_snprintf", "SNPRINTF"),
+                ("BLI_snprintf_rlen", "SNPRINTF_RLEN"),
+                ("BLI_vsnprintf", "VSNPRINTF"),
+                ("BLI_vsnprintf_rlen", "VSNPRINTF_RLEN"),
             ):
                 for match in re.finditer(
                         r"\b" + src + r"\(([^,]+),\s+([^,]+),",
                         data,
                         flags=re.MULTILINE,
                 ):
-                    edits.append(Edit(
-                        span=match.span(),
-                        content='%s(%s,' % (dst, match.group(1)),
-                        content_fail='__ALWAYS_FAIL__',
-                    ))
+                    edits.append(
+                        Edit(
+                            span=match.span(),
+                            content="%s(%s," % (dst, match.group(1)),
+                            content_fail="__ALWAYS_FAIL__",
+                        ))
 
             return edits
 
@@ -953,17 +1017,21 @@ class edit_generators:
         With:
           ARRAY_SIZE(foo)
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
             # Note that this replacement is only valid in some cases,
             # so only apply with validation that binary output matches.
-            for match in re.finditer(r"\bsizeof\((.*)\) / sizeof\([^\)]+\)", data):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='ARRAY_SIZE(%s)' % match.group(1),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+            for match in re.finditer(r"\bsizeof\((.*)\) / sizeof\([^\)]+\)",
+                                     data):
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="ARRAY_SIZE(%s)" % match.group(1),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             return edits
 
@@ -984,8 +1052,10 @@ class edit_generators:
         Note that the `CFLAGS` should be set so missing parentheses that contain assignments - error instead of warn:
         With GCC: `-Werror=parentheses`
         """
+
         @staticmethod
-        def edit_list_from_file(_source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(_source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
             # Give up after searching for a bracket this many characters and finding none.
@@ -999,20 +1069,23 @@ class edit_generators:
                 if data[inner_beg] != "(":
                     continue
 
-                inner_end = text_matching_bracket_forward(data, inner_beg, inner_beg + bracket_seek_limit, "(", ")")
+                inner_end = text_matching_bracket_forward(
+                    data, inner_beg, inner_beg + bracket_seek_limit, "(", ")")
                 if inner_end == -1:
                     continue
                 outer_beg = inner_beg - 1
-                outer_end = text_matching_bracket_forward(data, outer_beg, inner_end + 1, "(", ")")
+                outer_end = text_matching_bracket_forward(
+                    data, outer_beg, inner_end + 1, "(", ")")
                 if outer_end != inner_end + 1:
                     continue
 
                 text = data[inner_beg:inner_end + 1]
-                edits.append(Edit(
-                    span=(outer_beg, outer_end + 1),
-                    content=text,
-                    content_fail='(__ALWAYS_FAIL__)',
-                ))
+                edits.append(
+                    Edit(
+                        span=(outer_beg, outer_end + 1),
+                        content=text,
+                        content_fail="(__ALWAYS_FAIL__)",
+                    ))
 
             # Handle `(func(a + b))` -> `func(a + b)`
             for match in re.finditer(r"(\))", data):
@@ -1021,10 +1094,12 @@ class edit_generators:
                 if data[outer_end] != ")":
                     continue
 
-                inner_beg = text_matching_bracket_backward(data, inner_end, inner_end - bracket_seek_limit, "(", ")")
+                inner_beg = text_matching_bracket_backward(
+                    data, inner_end, inner_end - bracket_seek_limit, "(", ")")
                 if inner_beg == -1:
                     continue
-                outer_beg = text_matching_bracket_backward(data, outer_end, outer_end - bracket_seek_limit, "(", ")")
+                outer_beg = text_matching_bracket_backward(
+                    data, outer_end, outer_end - bracket_seek_limit, "(", ")")
                 if outer_beg == -1:
                     continue
 
@@ -1064,13 +1139,14 @@ class edit_generators:
                     if data[outer_beg - 1] == "*":
                         continue
 
-                text_no_parens = data[outer_beg + 1: outer_end]
+                text_no_parens = data[outer_beg + 1:outer_end]
 
-                edits.append(Edit(
-                    span=(outer_beg, outer_end + 1),
-                    content=text_no_parens,
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=(outer_beg, outer_end + 1),
+                        content=text_no_parens,
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             return edits
 
@@ -1084,7 +1160,7 @@ class edit_generators:
 
         @staticmethod
         def _header_guard_from_filename(f: str) -> str:
-            return '__%s__' % os.path.basename(f).replace('.', '_').upper()
+            return "__%s__" % os.path.basename(f).replace(".", "_").upper()
 
         @classmethod
         def setup(cls) -> Any:
@@ -1092,59 +1168,69 @@ class edit_generators:
             # This is needed so we can remove the header with the knowledge the source file didn't use it indirectly.
             files: List[Tuple[str, str, str, str]] = []
             shared_edit_data = {
-                'files': files,
+                "files": files,
             }
             for f in files_recursive_with_ext(
-                    os.path.join(SOURCE_DIR, 'source'),
-                    ('.h', '.hh', '.inl', '.hpp', '.hxx'),
+                    os.path.join(SOURCE_DIR, "source"),
+                (".h", ".hh", ".inl", ".hpp", ".hxx"),
             ):
-                with open(f, 'r', encoding='utf-8') as fh:
+                with open(f, "r", encoding="utf-8") as fh:
                     data = fh.read()
 
-                for match in re.finditer(r'^[ \t]*#\s*(pragma\s+once)\b', data, flags=re.MULTILINE):
+                for match in re.finditer(r"^[ \t]*#\s*(pragma\s+once)\b",
+                                         data,
+                                         flags=re.MULTILINE):
                     header_guard = cls._header_guard_from_filename(f)
                     start, end = match.span()
                     src = data[start:end]
-                    dst = (
-                        '#ifndef %s\n#define %s' % (header_guard, header_guard)
-                    )
-                    dst_footer = '\n#endif /* %s */\n' % header_guard
+                    dst = "#ifndef %s\n#define %s" % (header_guard,
+                                                      header_guard)
+                    dst_footer = "\n#endif /* %s */\n" % header_guard
                     files.append((f, src, dst, dst_footer))
                     data = data[:start] + dst + data[end:] + dst_footer
-                    with open(f, 'w', encoding='utf-8') as fh:
+                    with open(f, "w", encoding="utf-8") as fh:
                         fh.write(data)
                     break
             return shared_edit_data
 
         @staticmethod
         def teardown(shared_edit_data: Any) -> None:
-            files = shared_edit_data['files']
+            files = shared_edit_data["files"]
             for f, src, dst, dst_footer in files:
-                with open(f, 'r', encoding='utf-8') as fh:
+                with open(f, "r", encoding="utf-8") as fh:
                     data = fh.read()
 
                 data = data.replace(
-                    dst, src,
+                    dst,
+                    src,
                 ).replace(
-                    dst_footer, '',
+                    dst_footer,
+                    "",
                 )
-                with open(f, 'w', encoding='utf-8') as fh:
+                with open(f, "w", encoding="utf-8") as fh:
                     fh.write(data)
 
         @classmethod
-        def edit_list_from_file(cls, _source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
+        def edit_list_from_file(cls, _source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits = []
 
             # Remove include.
-            for match in re.finditer(r"^(([ \t]*#\s*include\s+\")([^\"]+)(\"[^\n]*\n))", data, flags=re.MULTILINE):
+            for match in re.finditer(
+                    r"^(([ \t]*#\s*include\s+\")([^\"]+)(\"[^\n]*\n))",
+                    data,
+                    flags=re.MULTILINE,
+            ):
                 header_name = match.group(3)
                 header_guard = cls._header_guard_from_filename(header_name)
-                edits.append(Edit(
-                    span=match.span(),
-                    content='',  # Remove the header.
-                    content_fail='%s__ALWAYS_FAIL__%s' % (match.group(2), match.group(4)),
-                    extra_build_args=('-D' + header_guard, ),
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="",  # Remove the header.
+                        content_fail="%s__ALWAYS_FAIL__%s" %
+                        (match.group(2), match.group(4)),
+                        extra_build_args=("-D" + header_guard, ),
+                    ))
 
             return edits
 
@@ -1164,9 +1250,10 @@ class edit_generators:
         With:
           float(foo(a + b))
         """
-        @staticmethod
-        def edit_list_from_file(source: str, data: str, _shared_edit_data: Any) -> List[Edit]:
 
+        @staticmethod
+        def edit_list_from_file(source: str, data: str,
+                                _shared_edit_data: Any) -> List[Edit]:
             edits: List[Edit] = []
 
             # The user might include C & C++, if they forget, it is better not to operate on C.
@@ -1179,29 +1266,26 @@ class edit_generators:
             # - Simple case:  `(float)(a + b)` -> `float(a + b)`.
             # - Complex Case: `(float)foo(a + b) + c` -> `float(foo(a + b)) + c`
             for match in re.finditer(
-                    "(\\()" +  # 1st group.
-                    any_number_re +  # 2nd group.
-                    "(\\))",  # 3rd group.
+                    "(\\()" + any_number_re  # 1st group.
+                    + "(\\))",  # 2nd group.  # 3rd group.
                     data,
             ):
                 beg, end = match.span()
                 # This could be ignored, but `sizeof` accounts for such a large number
                 # of cases that should be left as-is, that it's best to explicitly ignore them.
-                if (
-                    (beg > 6) and
-                    (data[beg - 6: beg] == 'sizeof') and
-                    (not data[beg - 7].isalpha())
-                ):
+                if ((beg > 6) and (data[beg - 6:beg] == "sizeof")
+                        and (not data[beg - 7].isalpha())):
                     continue
 
                 char_after = data[end]
                 if char_after == "(":
                     # Simple case.
-                    edits.append(Edit(
-                        span=(beg, end),
-                        content=match.group(2),
-                        content_fail='__ALWAYS_FAIL__',
-                    ))
+                    edits.append(
+                        Edit(
+                            span=(beg, end),
+                            content=match.group(2),
+                            content_fail="__ALWAYS_FAIL__",
+                        ))
                 else:
                     # The complex case is involved as brackets need to be added.
                     # Currently this is not handled in a clever way, just try add in brackets
@@ -1213,46 +1297,46 @@ class edit_generators:
                         if "\n" == data[offset_end]:
                             break
 
-                        if (
-                                (data[offset_end - 1] in IDENTIFIER_CHARS) and
-                                (data[offset_end] in IDENTIFIER_CHARS)
-                        ):
+                        if (data[offset_end - 1]
+                                in IDENTIFIER_CHARS) and (data[offset_end]
+                                                          in IDENTIFIER_CHARS):
                             continue
 
                         # Include `text_tail` in fail content in case it contains comments.
                         text_tail = "(" + data[end:offset_end] + ")"
-                        edits.append(Edit(
-                            span=(beg, offset_end),
-                            content=text + text_tail,
-                            content_fail='(__ALWAYS_FAIL__)' + text_tail,
-                        ))
+                        edits.append(
+                            Edit(
+                                span=(beg, offset_end),
+                                content=text + text_tail,
+                                content_fail="(__ALWAYS_FAIL__)" + text_tail,
+                            ))
 
             # Simple case: `static_cast<float>(a + b)` => `float(a + b)`.
             for match in re.finditer(
-                    r"\b(static_cast<)" +  # 1st group.
-                    any_number_re +  # 2nd group.
-                    "(>)",  # 3rd group.
+                    r"\b(static_cast<)" + any_number_re  # 1st group.
+                    + "(>)",  # 2nd group.  # 3rd group.
                     data,
             ):
-                edits.append(Edit(
-                    span=match.span(),
-                    content='%s' % match.group(2),
-                    content_fail='__ALWAYS_FAIL__',
-                ))
+                edits.append(
+                    Edit(
+                        span=match.span(),
+                        content="%s" % match.group(2),
+                        content_fail="__ALWAYS_FAIL__",
+                    ))
 
             return edits
 
 
 def test_edit(
-        source: str,
-        output: str,
-        output_bytes: Optional[bytes],
-        build_args: Sequence[str],
-        build_cwd: Optional[str],
-        data: str,
-        data_test: str,
-        keep_edits: bool = True,
-        expect_failure: bool = False,
+    source: str,
+    output: str,
+    output_bytes: Optional[bytes],
+    build_args: Sequence[str],
+    build_cwd: Optional[str],
+    data: str,
+    data_test: str,
+    keep_edits: bool = True,
+    expect_failure: bool = False,
 ) -> bool:
     """
     Return true if `data_test` has the same object output as `data`.
@@ -1260,7 +1344,7 @@ def test_edit(
     if os.path.exists(output):
         os.remove(output)
 
-    with open(source, 'w', encoding='utf-8') as fh:
+    with open(source, "w", encoding="utf-8") as fh:
         fh.write(data_test)
 
     ret = run(build_args, cwd=build_cwd, quiet=expect_failure)
@@ -1268,24 +1352,29 @@ def test_edit(
         output_bytes_test = file_as_bytes(output)
         if (output_bytes is None) or (file_as_bytes(output) == output_bytes):
             if not keep_edits:
-                with open(source, 'w', encoding='utf-8') as fh:
+                with open(source, "w", encoding="utf-8") as fh:
                     fh.write(data)
             return True
         else:
             if VERBOSE_EDIT_ACTION:
-                print("Changed code, skip...", hex(hash(output_bytes)), hex(hash(output_bytes_test)))
+                print(
+                    "Changed code, skip...",
+                    hex(hash(output_bytes)),
+                    hex(hash(output_bytes_test)),
+                )
     else:
         if not expect_failure:
             if VERBOSE_EDIT_ACTION:
                 print("Failed to compile, skip...")
 
-    with open(source, 'w', encoding='utf-8') as fh:
+    with open(source, "w", encoding="utf-8") as fh:
         fh.write(data)
     return False
 
 
 # -----------------------------------------------------------------------------
 # List Fix Functions
+
 
 def edit_function_get_all() -> List[str]:
     fixes = []
@@ -1307,7 +1396,9 @@ def edit_class_from_id(name: str) -> Type[EditGenerator]:
 # -----------------------------------------------------------------------------
 # Accept / Reject Edits
 
-def apply_edit(data: str, text_to_replace: str, start: int, end: int, *, verbose: bool) -> str:
+
+def apply_edit(data: str, text_to_replace: str, start: int, end: int, *,
+               verbose: bool) -> str:
     if verbose:
         line_before = line_from_span(data, start, end)
 
@@ -1326,16 +1417,16 @@ def apply_edit(data: str, text_to_replace: str, start: int, end: int, *, verbose
 
 
 def wash_source_with_edits(
-        source: str,
-        output: str,
-        build_args: Sequence[str],
-        build_cwd: Optional[str],
-        edit_to_apply: str,
-        skip_test: bool,
-        shared_edit_data: Any,
+    source: str,
+    output: str,
+    build_args: Sequence[str],
+    build_cwd: Optional[str],
+    edit_to_apply: str,
+    skip_test: bool,
+    shared_edit_data: Any,
 ) -> None:
     # build_args = build_args + " -Werror=duplicate-decl-specifier"
-    with open(source, 'r', encoding='utf-8') as fh:
+    with open(source, "r", encoding="utf-8") as fh:
         data = fh.read()
     edit_generator_class = edit_class_from_id(edit_to_apply)
 
@@ -1350,25 +1441,34 @@ def wash_source_with_edits(
     while edit_again:
         edit_again = False
 
-        edits = edit_generator_class.edit_list_from_file(source, data, shared_edit_data)
+        edits = edit_generator_class.edit_list_from_file(
+            source, data, shared_edit_data)
         # Sort by span, in a way that tries shorter spans first
         # This is more efficient when testing multiple overlapping edits,
         # since when a smaller edit succeeds, it's less likely to have to try as many edits that span wider ranges.
         # (This applies to `use_function_style_cast`).
-        edits.sort(reverse=True, key=lambda edit: (edit.span[0], -edit.span[1]))
+        edits.sort(reverse=True,
+                   key=lambda edit: (edit.span[0], -edit.span[1]))
         if not edits:
             return
 
         if skip_test:
             # Just apply all edits.
-            for (start, end), text, _text_always_fail, _extra_build_args in edits:
+            for (start,
+                 end), text, _text_always_fail, _extra_build_args in edits:
                 data = apply_edit(data, text, start, end, verbose=VERBOSE)
-            with open(source, 'w', encoding='utf-8') as fh:
+            with open(source, "w", encoding="utf-8") as fh:
                 fh.write(data)
             return
 
         test_edit(
-            source, output, None, build_args, build_cwd, data, data,
+            source,
+            output,
+            None,
+            build_args,
+            build_cwd,
+            data,
+            data,
             keep_edits=False,
         )
         if not os.path.exists(output):
@@ -1392,26 +1492,49 @@ def wash_source_with_edits(
             build_args_for_edit = build_args
             if extra_build_args:
                 # Add directly after the compile command.
-                build_args_for_edit = build_args[:1] + extra_build_args + build_args[1:]
+                build_args_for_edit = build_args[:
+                                                 1] + extra_build_args + build_args[
+                                                     1:]
 
             data_test = apply_edit(data, text, start, end, verbose=VERBOSE)
             if test_edit(
-                    source, output, output_bytes, build_args_for_edit, build_cwd, data, data_test,
+                    source,
+                    output,
+                    output_bytes,
+                    build_args_for_edit,
+                    build_cwd,
+                    data,
+                    data_test,
                     keep_edits=False,
             ):
                 # This worked, check if the change would fail if replaced with 'text_always_fail'.
-                data_test_always_fail = apply_edit(data, text_always_fail, start, end, verbose=False)
+                data_test_always_fail = apply_edit(data,
+                                                   text_always_fail,
+                                                   start,
+                                                   end,
+                                                   verbose=False)
                 if test_edit(
-                        source, output, output_bytes, build_args_for_edit, build_cwd, data, data_test_always_fail,
-                        expect_failure=True, keep_edits=False,
+                        source,
+                        output,
+                        output_bytes,
+                        build_args_for_edit,
+                        build_cwd,
+                        data,
+                        data_test_always_fail,
+                        expect_failure=True,
+                        keep_edits=False,
                 ):
                     if VERBOSE_EDIT_ACTION:
-                        print("Edit at", (start, end), "doesn't fail, assumed to be ifdef'd out, continuing")
+                        print(
+                            "Edit at",
+                            (start, end),
+                            "doesn't fail, assumed to be ifdef'd out, continuing",
+                        )
                     continue
 
                 # Apply the edit.
                 data = data_test
-                with open(source, 'w', encoding='utf-8') as fh:
+                with open(source, "w", encoding="utf-8") as fh:
                     fh.write(data)
 
                 # Update the last successful edit, the end of the next edit must not overlap this one.
@@ -1433,11 +1556,12 @@ def wash_source_with_edits(
 # -----------------------------------------------------------------------------
 # Edit Source Code From Args
 
+
 def run_edits_on_directory(
-        build_dir: str,
-        regex_list: List[re.Pattern[str]],
-        edits_to_apply: Sequence[str],
-        skip_test: bool = False,
+    build_dir: str,
+    regex_list: List[re.Pattern[str]],
+    edits_to_apply: Sequence[str],
+    skip_test: bool = False,
 ) -> int:
     # currently only supports ninja or makefiles
     build_file_ninja = os.path.join(build_dir, "build.ninja")
@@ -1449,10 +1573,8 @@ def run_edits_on_directory(
         print("Using Make")
         args = find_build_args_make(build_dir)
     else:
-        sys.stderr.write(
-            "Can't find Ninja or Makefile (%r or %r), aborting" %
-            (build_file_ninja, build_file_make)
-        )
+        sys.stderr.write("Can't find Ninja or Makefile (%r or %r), aborting" %
+                         (build_file_ninja, build_file_make))
         return 1
 
     if args is None:
@@ -1470,8 +1592,10 @@ def run_edits_on_directory(
         os.path.join("source"),
     )
 
-    def split_build_args_with_cwd(build_args_str: str) -> Tuple[Sequence[str], Optional[str]]:
+    def split_build_args_with_cwd(
+            build_args_str: str, ) -> Tuple[Sequence[str], Optional[str]]:
         import shlex
+
         build_args = shlex.split(build_args_str)
 
         cwd = None
@@ -1481,7 +1605,8 @@ def run_edits_on_directory(
                 del build_args[0:3]
         return build_args, cwd
 
-    def output_from_build_args(build_args: Sequence[str], cwd: Optional[str]) -> str:
+    def output_from_build_args(build_args: Sequence[str],
+                               cwd: Optional[str]) -> str:
         i = build_args.index("-o")
         # Assume the output is a relative path is a CWD was set.
         if cwd:
@@ -1513,19 +1638,21 @@ def run_edits_on_directory(
 
     # Filter out build args.
     args_orig_len = len(args)
-    args_with_cwd = [
-        (c, *split_build_args_with_cwd(build_args_str))
-        for (c, build_args_str) in args
-        if test_path(c)
-    ]
+    args_with_cwd = [(c, *split_build_args_with_cwd(build_args_str))
+                     for (c, build_args_str) in args if test_path(c)]
     del args
-    print("Operating on %d of %d files..." % (len(args_with_cwd), args_orig_len))
-    for (c, build_args, build_cwd) in args_with_cwd:
+    print("Operating on %d of %d files..." %
+          (len(args_with_cwd), args_orig_len))
+    for c, build_args, build_cwd in args_with_cwd:
         print(" ", c)
     del args_orig_len
 
     for i, edit_to_apply in enumerate(edits_to_apply):
-        print("Applying edit:", edit_to_apply, "({:d} of {:d})".format(i + 1, len(edits_to_apply)))
+        print(
+            "Applying edit:",
+            edit_to_apply,
+            "({:d} of {:d})".format(i + 1, len(edits_to_apply)),
+        )
         edit_generator_class = edit_class_from_id(edit_to_apply)
 
         shared_edit_data = edit_generator_class.setup()
@@ -1542,6 +1669,7 @@ def run_edits_on_directory(
                     shared_edit_data,
                 ) for (c, build_args, build_cwd) in args_with_cwd]
                 import multiprocessing
+
                 job_total = multiprocessing.cpu_count()
                 pool = multiprocessing.Pool(processes=job_total * 2)
                 pool.starmap(wash_source_with_edits, args_expanded)
@@ -1563,22 +1691,25 @@ def run_edits_on_directory(
         finally:
             edit_generator_class.teardown(shared_edit_data)
 
-    print("\n" "Exit without errors")
+    print("\n"
+          "Exit without errors")
     return 0
 
 
 def create_parser(edits_all: Sequence[str]) -> argparse.ArgumentParser:
-    from textwrap import indent, dedent
+    from textwrap import dedent, indent
 
     # Create docstring for edits.
     edits_all_docs = []
     for edit in edits_all:
-        edits_all_docs.append(
-            "  %s\n%s" % (
-                edit,
-                indent(dedent(getattr(edit_generators, edit).__doc__ or '').strip('\n') + '\n', '    '),
-            )
-        )
+        edits_all_docs.append("  %s\n%s" % (
+            edit,
+            indent(
+                dedent(getattr(edit_generators, edit).__doc__
+                       or "").strip("\n") + "\n",
+                "    ",
+            ),
+        ))
 
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -1590,7 +1721,7 @@ def create_parser(edits_all: Sequence[str]) -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--match",
-        nargs='+',
+        nargs="+",
         required=True,
         metavar="REGEX",
         help="Match file paths against this expression",
@@ -1599,20 +1730,20 @@ def create_parser(edits_all: Sequence[str]) -> argparse.ArgumentParser:
         "--edits",
         dest="edits",
         help=(
-            "Specify the edit preset to run.\n\n" +
-            "\n".join(edits_all_docs) + "\n"
-            "Multiple edits may be passed at once (comma separated, no spaces)."),
+            "Specify the edit preset to run.\n\n" + "\n".join(edits_all_docs) +
+            "\n"
+            "Multiple edits may be passed at once (comma separated, no spaces)."
+        ),
         required=True,
     )
     parser.add_argument(
         "--skip-test",
         dest="skip_test",
         default=False,
-        action='store_true',
-        help=(
-            "Perform all edits without testing if they perform functional changes. "
-            "Use to quickly preview edits, or to perform edits which are manually checked (default=False)"
-        ),
+        action="store_true",
+        help=("Perform all edits without testing if they perform functional changes. "
+              "Use to quickly preview edits, or to perform edits which are manually checked (default=False)"
+              ),
         required=False,
     )
 
@@ -1641,13 +1772,16 @@ def main() -> int:
 
     for edit in edits_all_from_args:
         if edit not in edits_all:
-            print("Error, unrecognized '--edits' argument '{:s}', expected a value in {{{:s}}}".format(
-                edit,
-                ", ".join(edits_all),
-            ))
+            print(
+                "Error, unrecognized '--edits' argument '{:s}', expected a value in {{{:s}}}"
+                .format(
+                    edit,
+                    ", ".join(edits_all),
+                ))
             return 1
 
-    return run_edits_on_directory(build_dir, regex_list, edits_all_from_args, args.skip_test)
+    return run_edits_on_directory(build_dir, regex_list, edits_all_from_args,
+                                  args.skip_test)
 
 
 if __name__ == "__main__":
