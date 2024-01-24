@@ -1,4 +1,4 @@
-/* SPDX-FileCopyrightText: 2023 Blender Foundation
+/* SPDX-FileCopyrightText: 2023 Blender Authors
  *
  * SPDX-License-Identifier: Apache-2.0 */
 
@@ -61,6 +61,42 @@ TEST(index_mask, FromSize)
     EXPECT_EQ(mask.first(), 0);
     EXPECT_EQ(mask.last(), max_segment_size - 1);
     EXPECT_EQ(mask.min_array_size(), max_segment_size);
+  }
+}
+
+TEST(index_mask, FromUnion)
+{
+  {
+    IndexMaskMemory memory;
+    Array<int> data_a = {1, 2};
+    IndexMask mask_a = IndexMask::from_indices<int>(data_a, memory);
+    Array<int> data_b = {2, 20000, 20001};
+    IndexMask mask_b = IndexMask::from_indices<int>(data_b, memory);
+
+    IndexMask mask_union = IndexMask::from_union(mask_a, mask_b, memory);
+
+    EXPECT_EQ(mask_union.size(), 4);
+    EXPECT_EQ(mask_union[0], 1);
+    EXPECT_EQ(mask_union[1], 2);
+    EXPECT_EQ(mask_union[2], 20000);
+    EXPECT_EQ(mask_union[3], 20001);
+  }
+  {
+    IndexMaskMemory memory;
+    Array<int> data_a = {1, 2, 3};
+    IndexMask mask_a = IndexMask::from_indices<int>(data_a, memory);
+    Array<int> data_b = {20000, 20001, 20002};
+    IndexMask mask_b = IndexMask::from_indices<int>(data_b, memory);
+
+    IndexMask mask_union = IndexMask::from_union(mask_a, mask_b, memory);
+
+    EXPECT_EQ(mask_union.size(), 6);
+    EXPECT_EQ(mask_union[0], 1);
+    EXPECT_EQ(mask_union[1], 2);
+    EXPECT_EQ(mask_union[2], 3);
+    EXPECT_EQ(mask_union[3], 20000);
+    EXPECT_EQ(mask_union[4], 20001);
+    EXPECT_EQ(mask_union[5], 20002);
   }
 }
 
@@ -282,6 +318,15 @@ TEST(index_mask, ComplementFuzzy)
     complement.foreach_index([&](const int64_t i) { EXPECT_FALSE(mask.contains(i)); });
     mask.foreach_index([&](const int64_t i) { EXPECT_FALSE(complement.contains(i)); });
   }
+}
+
+TEST(index_mask, OffsetIndexRangeFind)
+{
+  IndexMask mask = IndexRange(1, 2);
+  auto result = mask.find(1);
+  EXPECT_TRUE(result.has_value());
+  EXPECT_EQ(mask.iterator_to_index(*result), 0);
+  EXPECT_EQ(mask[0], 1);
 }
 
 }  // namespace blender::index_mask::tests

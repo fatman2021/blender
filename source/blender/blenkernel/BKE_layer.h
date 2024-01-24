@@ -1,4 +1,4 @@
-/* SPDX-FileCopyrightText: 2023 Blender Foundation
+/* SPDX-FileCopyrightText: 2023 Blender Authors
  *
  * SPDX-License-Identifier: GPL-2.0-or-later */
 
@@ -107,7 +107,7 @@ void BKE_view_layer_base_select_and_set_active(struct ViewLayer *view_layer, str
 /**
  * Only copy internal data of #ViewLayer from source to already allocated/initialized destination.
  *
- * \param flag: Copying options (see BKE_lib_id.h's LIB_ID_COPY_... flags for more).
+ * \param flag: Copying options (see BKE_lib_id.hh's LIB_ID_COPY_... flags for more).
  */
 void BKE_view_layer_copy_data(struct Scene *scene_dst,
                               const struct Scene *scene_src,
@@ -272,9 +272,9 @@ void BKE_view_layer_blend_write(struct BlendWriter *writer,
                                 const struct Scene *scene,
                                 struct ViewLayer *view_layer);
 void BKE_view_layer_blend_read_data(struct BlendDataReader *reader, struct ViewLayer *view_layer);
-void BKE_view_layer_blend_read_lib(struct BlendLibReader *reader,
-                                   struct ID *self_id,
-                                   struct ViewLayer *view_layer);
+void BKE_view_layer_blend_read_after_liblink(struct BlendLibReader *reader,
+                                             struct ID *self_id,
+                                             struct ViewLayer *view_layer);
 
 /* iterators */
 
@@ -493,7 +493,7 @@ void BKE_view_layer_visible_bases_iterator_end(BLI_Iterator *iter);
   } \
   ((void)0)
 
-/* layer_utils.c */
+/* `layer_utils.cc` */
 
 struct ObjectsInViewLayerParams {
   uint no_dup_data : 1;

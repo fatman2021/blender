@@ -57,6 +57,11 @@ typedef struct BlendFileData {
 
   int fileflags;
   int globalf;
+  /** Typically the actual filepath of the read blendfile, except when recovering
+   * save-on-exit/autosave files. In the latter case, it will be the path of the file that
+   * generated the auto-saved one being recovered.
+   *
+   * NOTE: Currently expected to be the same path as #BlendFileData.filepath. */
   char filepath[1024]; /* 1024 = FILE_MAX */
 
   /** TODO: think this isn't needed anymore? */
@@ -195,6 +200,18 @@ BlendFileData *BLO_read_from_memfile(struct Main *oldmain,
  */
 void BLO_blendfiledata_free(BlendFileData *bfd);
 
+/**
+ * Does versioning code that requires the Main data-base to be fully loaded and valid.
+ *
+ * readfile's `do_versions` does not allow to create (or delete) IDs, and only operates on a single
+ * library at a time.
+ *
+ * Called at the end of #setup_add_data from BKE's `blendfile.cc`.
+ *
+ * \param new_bmain: the newly read Main data-base.
+ */
+void BLO_read_do_version_after_setup(struct Main *new_bmain, struct BlendFileReadReport *reports);
+
 /** \} */
 
 /* -------------------------------------------------------------------- */
@@ -204,6 +221,8 @@ void BLO_blendfiledata_free(BlendFileData *bfd);
 typedef struct BLODataBlockInfo {
   char name[64]; /* MAX_NAME */
   struct AssetMetaData *asset_data;
+  /** Ownership over #asset_data above can be "stolen out" of this struct, for more permanent
+   * storage. In that case, set this to false to avoid double freeing of the stolen data. */
   bool free_asset_data;
   /**
    * Optimization: Tag data-blocks for which we know there is no preview.
@@ -313,8 +332,10 @@ struct LinkNode *BLO_blendhandle_get_linkable_groups(BlendHandle *bh);
  */
 void BLO_blendhandle_close(BlendHandle *bh);
 
-/** Mark the given Main (and the 'root' local one in case of lib-split Mains) as invalid, and
- * generate an error report containing given `message`. */
+/**
+ * Mark the given Main (and the 'root' local one in case of lib-split Mains) as invalid, and
+ * generate an error report containing given `message`.
+ */
 void BLO_read_invalidate_message(BlendHandle *bh, struct Main *bmain, const char *message);
 
 /**
@@ -484,7 +505,7 @@ void BLO_main_expander(BLOExpandDoitCallback expand_doit_func);
  * Loop over all ID data in Main to mark relations.
  * Set (id->tag & LIB_TAG_NEED_EXPAND) to mark expanding. Flags get cleared after expanding.
  *
- * \param fdhandle: usually file-data, or own handle.
+ * \param fdhandle: usually file-data, or own handle. May be nullptr.
  * \param mainvar: the Main database to expand.
  */
 void BLO_expand_main(void *fdhandle, struct Main *mainvar);
@@ -517,6 +538,14 @@ void BLO_sanitize_experimental_features_userpref_blend(struct UserDef *userdef);
  * to convert it to ImBuf image).
  */
 struct BlendThumbnail *BLO_thumbnail_from_file(const char *filepath);
+
+/**
+ * Does a very light reading of given .blend file to extract its version.
+ *
+ * \param filepath: The path of the blend file to extract version from.
+ * \return The file version
+ */
+short BLO_version_from_file(const char *filepath);
 
 /** Default theme, see: `release/datafiles/userdef/userdef_default_theme.c`. */
 extern const struct bTheme U_theme_default;

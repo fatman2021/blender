@@ -1,4 +1,4 @@
-/* SPDX-FileCopyrightText: 2007 Blender Foundation
+/* SPDX-FileCopyrightText: 2007 Blender Authors
  *
  * SPDX-License-Identifier: GPL-2.0-or-later */
 
@@ -14,17 +14,19 @@
 
 #include "BLI_alloca.h"
 #include "BLI_linklist.h"
-#include "BLI_math.h"
+#include "BLI_math_geom.h"
+#include "BLI_math_matrix.h"
+#include "BLI_math_vector.h"
 #include "BLI_memarena.h"
 #include "BLI_string.h"
 #include "BLI_task.h"
 
-#include "BKE_attribute.h"
-#include "BKE_customdata.h"
-#include "BKE_multires.h"
+#include "BKE_attribute.hh"
+#include "BKE_customdata.hh"
+#include "BKE_multires.hh"
 
-#include "bmesh.h"
-#include "intern/bmesh_private.h"
+#include "bmesh.hh"
+#include "intern/bmesh_private.hh"
 
 /* edge and vertex share, currently there's no need to have different logic */
 static void bm_data_interp_from_elem(CustomData *data_layer,
@@ -40,9 +42,7 @@ static void bm_data_interp_from_elem(CustomData *data_layer,
         /* do nothing */
       }
       else {
-        CustomData_bmesh_free_block_data(data_layer, ele_dst->head.data);
-        CustomData_bmesh_copy_data(
-            data_layer, data_layer, ele_src_1->head.data, &ele_dst->head.data);
+        CustomData_bmesh_copy_block(*data_layer, ele_src_1->head.data, &ele_dst->head.data);
       }
     }
     else if (fac >= 1.0f) {
@@ -50,9 +50,7 @@ static void bm_data_interp_from_elem(CustomData *data_layer,
         /* do nothing */
       }
       else {
-        CustomData_bmesh_free_block_data(data_layer, ele_dst->head.data);
-        CustomData_bmesh_copy_data(
-            data_layer, data_layer, ele_src_2->head.data, &ele_dst->head.data);
+        CustomData_bmesh_copy_block(*data_layer, ele_src_2->head.data, &ele_dst->head.data);
       }
     }
     else {
@@ -152,7 +150,7 @@ void BM_face_interp_from_face_ex(BMesh *bm,
   float co[2];
 
   if (f_src != f_dst) {
-    BM_elem_attrs_copy(bm, bm, f_src, f_dst);
+    BM_elem_attrs_copy(bm, f_src, f_dst);
   }
 
   /* interpolate */
@@ -345,14 +343,14 @@ static bool mdisp_in_mdispquad(BMLoop *l_src,
   add_v3_v3(v4, c);
 
   if (!quad_co(v1, v2, v3, v4, p, l_src->v->no, r_uv)) {
-    return 0;
+    return false;
   }
 
-  mul_v2_fl(r_uv, (float)(res - 1));
+  mul_v2_fl(r_uv, float(res - 1));
 
   mdisp_axis_from_quad(v1, v2, v3, v4, r_axis_x, r_axis_y);
 
-  return 1;
+  return true;
 }
 
 static float bm_loop_flip_equotion(float mat[2][2],
@@ -405,7 +403,7 @@ static void bm_loop_flip_disp(const float source_axis_x[3],
   disp[1] = (mat[0][0] * b[1] - b[0] * mat[1][0]) / d;
 }
 
-typedef struct BMLoopInterpMultiresData {
+struct BMLoopInterpMultiresData {
   BMLoop *l_dst;
   BMLoop *l_src_first;
   int cd_loop_mdisp_offset;
@@ -419,7 +417,7 @@ typedef struct BMLoopInterpMultiresData {
 
   int res;
   float d;
-} BMLoopInterpMultiresData;
+};
 
 static void loop_interp_multires_cb(void *__restrict userdata,
                                     const int ix,
@@ -509,7 +507,7 @@ void BM_loop_interp_multires_ex(BMesh * /*bm*/,
 
   mdisp_axis_from_quad(v1, v2, v3, v4, axis_x, axis_y);
 
-  const int res = (int)sqrt(md_dst->totdisp);
+  const int res = int(sqrt(md_dst->totdisp));
   BMLoopInterpMultiresData data = {};
   data.l_dst = l_dst;
   data.l_src_first = BM_FACE_FIRST_LOOP(f_src);
@@ -523,7 +521,7 @@ void BM_loop_interp_multires_ex(BMesh * /*bm*/,
   data.e1 = e1;
   data.e2 = e2;
   data.res = res;
-  data.d = 1.0f / (float)(res - 1);
+  data.d = 1.0f / float(res - 1);
 
   TaskParallelSettings settings;
   BLI_parallel_range_settings_defaults(&settings);
@@ -609,7 +607,7 @@ void BM_face_multires_bounds_smooth(BMesh *bm, BMFace *f)
      * </pre>
      */
 
-    sides = (int)sqrt(mdp->totdisp);
+    sides = int(sqrt(mdp->totdisp));
     for (y = 0; y < sides; y++) {
       mid_v3_v3v3(co1, mdn->disps[y * sides], mdl->disps[y]);
 
@@ -652,7 +650,7 @@ void BM_face_multires_bounds_smooth(BMesh *bm, BMFace *f)
           BM_ELEM_CD_GET_VOID_P(l->radial_next->next, cd_loop_mdisp_offset));
     }
 
-    sides = (int)sqrt(mdl1->totdisp);
+    sides = int(sqrt(mdl1->totdisp));
     for (y = 0; y < sides; y++) {
       int a1, a2, o1, o2;
 
@@ -770,6 +768,8 @@ void BM_vert_interp_from_face(BMesh *bm, BMVert *v_dst, const BMFace *f_src)
 
 static void update_data_blocks(BMesh *bm, CustomData *olddata, CustomData *data)
 {
+  const BMCustomDataCopyMap cd_map = CustomData_bmesh_copy_map_calc(*olddata, *data);
+
   BMIter iter;
   BLI_mempool *oldpool = olddata->pool;
   void *block;
@@ -781,8 +781,7 @@ static void update_data_blocks(BMesh *bm, CustomData *olddata, CustomData *data)
 
     BM_ITER_MESH (eve, &iter, bm, BM_VERTS_OF_MESH) {
       block = nullptr;
-      CustomData_bmesh_set_default(data, &block);
-      CustomData_bmesh_copy_data(olddata, data, eve->head.data, &block);
+      CustomData_bmesh_copy_block(*data, cd_map, eve->head.data, &block);
       CustomData_bmesh_free_block(olddata, &eve->head.data);
       eve->head.data = block;
     }
@@ -794,8 +793,7 @@ static void update_data_blocks(BMesh *bm, CustomData *olddata, CustomData *data)
 
     BM_ITER_MESH (eed, &iter, bm, BM_EDGES_OF_MESH) {
       block = nullptr;
-      CustomData_bmesh_set_default(data, &block);
-      CustomData_bmesh_copy_data(olddata, data, eed->head.data, &block);
+      CustomData_bmesh_copy_block(*data, cd_map, eed->head.data, &block);
       CustomData_bmesh_free_block(olddata, &eed->head.data);
       eed->head.data = block;
     }
@@ -809,8 +807,7 @@ static void update_data_blocks(BMesh *bm, CustomData *olddata, CustomData *data)
     BM_ITER_MESH (efa, &iter, bm, BM_FACES_OF_MESH) {
       BM_ITER_ELEM (l, &liter, efa, BM_LOOPS_OF_FACE) {
         block = nullptr;
-        CustomData_bmesh_set_default(data, &block);
-        CustomData_bmesh_copy_data(olddata, data, l->head.data, &block);
+        CustomData_bmesh_copy_block(*data, cd_map, l->head.data, &block);
         CustomData_bmesh_free_block(olddata, &l->head.data);
         l->head.data = block;
       }
@@ -823,8 +820,7 @@ static void update_data_blocks(BMesh *bm, CustomData *olddata, CustomData *data)
 
     BM_ITER_MESH (efa, &iter, bm, BM_FACES_OF_MESH) {
       block = nullptr;
-      CustomData_bmesh_set_default(data, &block);
-      CustomData_bmesh_copy_data(olddata, data, efa->head.data, &block);
+      CustomData_bmesh_copy_block(*data, cd_map, efa->head.data, &block);
       CustomData_bmesh_free_block(olddata, &efa->head.data);
       efa->head.data = block;
     }
@@ -1117,7 +1113,7 @@ struct LoopGroupCD {
   int data_len;
 };
 
-static void bm_loop_walk_add(struct LoopWalkCtx *lwc, BMLoop *l)
+static void bm_loop_walk_add(LoopWalkCtx *lwc, BMLoop *l)
 {
   const int i = BM_elem_index_get(l);
   const float w = lwc->loop_weights[i];
@@ -1135,7 +1131,7 @@ static void bm_loop_walk_add(struct LoopWalkCtx *lwc, BMLoop *l)
  *
  * \note called for fan matching so we're pretty much safe not to break the stack
  */
-static void bm_loop_walk_data(struct LoopWalkCtx *lwc, BMLoop *l_walk)
+static void bm_loop_walk_data(LoopWalkCtx *lwc, BMLoop *l_walk)
 {
   int i;
 
@@ -1169,7 +1165,7 @@ static void bm_loop_walk_data(struct LoopWalkCtx *lwc, BMLoop *l_walk)
 LinkNode *BM_vert_loop_groups_data_layer_create(
     BMesh *bm, BMVert *v, const int layer_n, const float *loop_weights, MemArena *arena)
 {
-  struct LoopWalkCtx lwc;
+  LoopWalkCtx lwc;
   LinkNode *groups = nullptr;
   BMLoop *l;
   BMIter liter;
@@ -1196,8 +1192,7 @@ LinkNode *BM_vert_loop_groups_data_layer_create(
 
   BM_ITER_ELEM (l, &liter, v, BM_LOOPS_OF_VERT) {
     if (BM_elem_flag_test(l, BM_ELEM_INTERNAL_TAG)) {
-      struct LoopGroupCD *lf = static_cast<LoopGroupCD *>(
-          BLI_memarena_alloc(lwc.arena, sizeof(*lf)));
+      LoopGroupCD *lf = static_cast<LoopGroupCD *>(BLI_memarena_alloc(lwc.arena, sizeof(*lf)));
       int len_prev = lwc.data_len;
 
       lwc.data_ref = BM_ELEM_CD_GET_VOID_P(l, lwc.cd_layer_offset);
@@ -1216,7 +1211,7 @@ LinkNode *BM_vert_loop_groups_data_layer_create(
         mul_vn_fl(lf->data_weights, lf->data_len, 1.0f / lwc.weight_accum);
       }
       else {
-        copy_vn_fl(lf->data_weights, lf->data_len, 1.0f / (float)lf->data_len);
+        copy_vn_fl(lf->data_weights, lf->data_len, 1.0f / float(lf->data_len));
       }
 
       BLI_linklist_prepend_arena(&groups, lf, lwc.arena);
@@ -1233,7 +1228,7 @@ static void bm_vert_loop_groups_data_layer_merge__single(BMesh *bm,
                                                          int layer_n,
                                                          void *data_tmp)
 {
-  struct LoopGroupCD *lf = static_cast<LoopGroupCD *>(lf_p);
+  LoopGroupCD *lf = static_cast<LoopGroupCD *>(lf_p);
   const int type = bm->ldata.layers[layer_n].type;
   int i;
   const float *data_weights;
@@ -1251,7 +1246,7 @@ static void bm_vert_loop_groups_data_layer_merge__single(BMesh *bm,
 static void bm_vert_loop_groups_data_layer_merge_weights__single(
     BMesh *bm, void *lf_p, const int layer_n, void *data_tmp, const float *loop_weights)
 {
-  struct LoopGroupCD *lf = static_cast<LoopGroupCD *>(lf_p);
+  LoopGroupCD *lf = static_cast<LoopGroupCD *>(lf_p);
   const int type = bm->ldata.layers[layer_n].type;
   int i;
   const float *data_weights;

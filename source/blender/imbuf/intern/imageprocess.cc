@@ -8,21 +8,21 @@
  * This file was moved here from the `src/` directory.
  * It is meant to deal with endianness. It resided in a general blending lib.
  * The other functions were only used during rendering. This single function remained.
- * It should probably move to `imbuf/intern/util.c`, but we'll keep it here for the time being.
+ * It should probably move to `imbuf/intern/util.cc`, but we'll keep it here for the time being.
  */
 
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdlib>
 
 #include "MEM_guardedalloc.h"
 
-#include "BLI_math.h"
+#include "BLI_math_interp.hh"
 #include "BLI_task.h"
 #include "BLI_utildefines.h"
 
-#include "IMB_colormanagement.h"
-#include "IMB_imbuf.h"
-#include "IMB_imbuf_types.h"
+#include "IMB_colormanagement.hh"
+#include "IMB_imbuf.hh"
+#include "IMB_imbuf_types.hh"
 
 void IMB_convert_rgba_to_abgr(ImBuf *ibuf)
 {
@@ -83,7 +83,7 @@ void bicubic_interpolation_color(const ImBuf *in, uchar outI[4], float outF[4], 
     BLI_bicubic_interpolation_fl(in->float_buffer.data, outF, in->x, in->y, 4, u, v);
   }
   else {
-    BLI_bicubic_interpolation_char(in->byte_buffer.data, outI, in->x, in->y, 4, u, v);
+    BLI_bicubic_interpolation_char(in->byte_buffer.data, outI, in->x, in->y, u, v);
   }
 }
 
@@ -108,20 +108,18 @@ void bicubic_interpolation(const ImBuf *in, ImBuf *out, float u, float v, int xo
 /** \name Bi-Linear Interpolation
  * \{ */
 
-void bilinear_interpolation_color_fl(
-    const ImBuf *in, uchar /*outI*/[4], float outF[4], float u, float v)
+void bilinear_interpolation_color_fl(const ImBuf *in, float outF[4], float u, float v)
 {
   BLI_assert(outF);
   BLI_assert(in->float_buffer.data);
   BLI_bilinear_interpolation_fl(in->float_buffer.data, outF, in->x, in->y, 4, u, v);
 }
 
-void bilinear_interpolation_color_char(
-    const ImBuf *in, uchar outI[4], float /*outF*/[4], float u, float v)
+void bilinear_interpolation_color_char(const ImBuf *in, uchar outI[4], float u, float v)
 {
   BLI_assert(outI);
   BLI_assert(in->byte_buffer.data);
-  BLI_bilinear_interpolation_char(in->byte_buffer.data, outI, in->x, in->y, 4, u, v);
+  BLI_bilinear_interpolation_char(in->byte_buffer.data, outI, in->x, in->y, u, v);
 }
 
 void bilinear_interpolation_color(const ImBuf *in, uchar outI[4], float outF[4], float u, float v)
@@ -130,11 +128,11 @@ void bilinear_interpolation_color(const ImBuf *in, uchar outI[4], float outF[4],
     BLI_bilinear_interpolation_fl(in->float_buffer.data, outF, in->x, in->y, 4, u, v);
   }
   else {
-    BLI_bilinear_interpolation_char(in->byte_buffer.data, outI, in->x, in->y, 4, u, v);
+    BLI_bilinear_interpolation_char(in->byte_buffer.data, outI, in->x, in->y, u, v);
   }
 }
 
-/* function assumes out to be zero'ed, only does RGBA */
+/* Function assumes out to be zeroed, only does RGBA. */
 /* BILINEAR INTERPOLATION */
 
 void bilinear_interpolation_color_wrap(
@@ -398,10 +396,10 @@ void IMB_processor_apply_threaded(
   BLI_task_pool_free(task_pool);
 }
 
-typedef struct ScanlineGlobalData {
+struct ScanlineGlobalData {
   void *custom_data;
   ScanlineThreadFunc do_thread;
-} ScanlineGlobalData;
+};
 
 static void processor_apply_parallel(void *__restrict userdata,
                                      const int scanline,
@@ -489,7 +487,8 @@ void IMB_sampleImageAtLocation(ImBuf *ibuf, float x, float y, bool make_linear_r
     nearest_interpolation_color(ibuf, byte_color, nullptr, x, y);
     rgba_uchar_to_float(color, byte_color);
     if (make_linear_rgb) {
-      IMB_colormanagement_colorspace_to_scene_linear_v4(color, false, ibuf->rect_colorspace);
+      IMB_colormanagement_colorspace_to_scene_linear_v4(
+          color, false, ibuf->byte_buffer.colorspace);
     }
   }
 }

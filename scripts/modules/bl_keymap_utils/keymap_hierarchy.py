@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2011-2023 Blender Authors
+#
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 __all__ = (
@@ -24,6 +26,13 @@ def _km_hierarchy_iter_recursive(items):
 
 
 def generate():
+    import bpy
+
+    if bpy.app.background:
+        from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
+        for cls in ToolSelectPanelHelper.__subclasses__():
+            cls.register_ensure()
+
     return list(_km_hierarchy_iter_recursive(_km_hierarchy))
 
 
@@ -128,7 +137,7 @@ _km_hierarchy = [
         ('Dopesheet Generic', 'DOPESHEET_EDITOR', 'WINDOW', []),
     ]),
     ('NLA Editor', 'NLA_EDITOR', 'WINDOW', [
-        ('NLA Channels', 'NLA_EDITOR', 'WINDOW', []),
+        ('NLA Tracks', 'NLA_EDITOR', 'WINDOW', []),
         ('NLA Generic', 'NLA_EDITOR', 'WINDOW', []),
     ]),
     ('Timeline', 'TIMELINE', 'WINDOW', []),

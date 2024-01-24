@@ -1,4 +1,4 @@
-/* SPDX-FileCopyrightText: 2008 Blender Foundation
+/* SPDX-FileCopyrightText: 2008 Blender Authors
  *
  * SPDX-License-Identifier: GPL-2.0-or-later */
 
@@ -6,9 +6,9 @@
  * \ingroup collada
  */
 
-#include "io_ops.h" /* own include */
+#include "io_ops.hh" /* own include */
 
-#include "WM_api.h"
+#include "WM_api.hh"
 
 #ifdef WITH_COLLADA
 #  include "io_collada.hh"
@@ -23,12 +23,13 @@
 #endif
 
 #include "io_cache.hh"
+#include "io_drop_import_file.hh"
 #include "io_gpencil.hh"
 #include "io_obj.hh"
 #include "io_ply_ops.hh"
 #include "io_stl_ops.hh"
 
-void ED_operatortypes_io(void)
+void ED_operatortypes_io()
 {
 #ifdef WITH_COLLADA
   /* Collada operators: */
@@ -72,5 +73,8 @@ void ED_operatortypes_io(void)
 
 #ifdef WITH_IO_STL
   WM_operatortype_append(WM_OT_stl_import);
+  WM_operatortype_append(WM_OT_stl_export);
 #endif
+  WM_operatortype_append(WM_OT_drop_import_file);
+  ED_dropbox_drop_import_file();
 }

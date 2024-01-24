@@ -1,4 +1,4 @@
-/* SPDX-FileCopyrightText: 2023 Blender Foundation
+/* SPDX-FileCopyrightText: 2023 Blender Authors
  *
  * SPDX-License-Identifier: GPL-2.0-or-later */
 
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 
 #include "AS_asset_catalog.hh"
@@ -140,7 +141,7 @@ class AssetLibrary {
   bool remove_asset(AssetRepresentation &asset);
 
   /**
-   * Remap ID pointers for local ID assets, see #BKE_lib_remap.h. When an ID pointer would be
+   * Remap ID pointers for local ID assets, see #BKE_lib_remap.hh. When an ID pointer would be
    * mapped to null (typically when an ID gets removed), the asset is removed, because we don't
    * support such empty/null assets.
    */
@@ -166,12 +167,16 @@ class AssetLibrary {
    */
   AssetIdentifier asset_identifier_from_library(StringRef relative_asset_path);
 
+  std::string resolve_asset_weak_reference_to_full_path(const AssetWeakReference &asset_reference);
+
   eAssetLibraryType library_type() const;
   StringRefNull name() const;
   StringRefNull root_path() const;
 };
 
 Vector<AssetLibraryReference> all_valid_asset_library_refs();
+
+AssetLibraryReference all_library_reference();
 
 }  // namespace blender::asset_system
 
@@ -224,7 +229,7 @@ std::string AS_asset_library_find_suitable_root_path_from_path(blender::StringRe
  *         r_library_path. If \a bmain wasn't saved into a file yet, the return value will be
  *         false.
  */
-std::string AS_asset_library_find_suitable_root_path_from_main(const struct Main *bmain);
+std::string AS_asset_library_find_suitable_root_path_from_main(const Main *bmain);
 
 blender::asset_system::AssetCatalogService *AS_asset_library_get_catalog_service(
     const ::AssetLibrary *library);

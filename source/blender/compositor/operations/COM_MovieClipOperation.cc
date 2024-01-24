@@ -1,4 +1,4 @@
-/* SPDX-FileCopyrightText: 2011 Blender Foundation.
+/* SPDX-FileCopyrightText: 2011 Blender Authors
  *
  * SPDX-License-Identifier: GPL-2.0-or-later */
 
@@ -7,7 +7,7 @@
 #include "BKE_image.h"
 #include "BKE_movieclip.h"
 
-#include "IMB_imbuf.h"
+#include "IMB_imbuf.hh"
 
 namespace blender::compositor {
 

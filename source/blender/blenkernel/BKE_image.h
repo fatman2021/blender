@@ -19,6 +19,7 @@ extern "C" {
 struct Depsgraph;
 struct ID;
 struct ImBuf;
+struct ImBufAnim;
 struct Image;
 struct ImageFormatData;
 struct ImagePool;
@@ -31,7 +32,6 @@ struct RenderResult;
 struct ReportList;
 struct Scene;
 struct StampData;
-struct anim;
 
 #define IMA_MAX_SPACE 64
 #define IMA_UDIM_MAX 2000
@@ -108,14 +108,14 @@ int BKE_imbuf_write_as(struct ImBuf *ibuf,
 /**
  * Used by sequencer too.
  */
-struct anim *openanim(const char *filepath,
-                      int flags,
-                      int streamindex,
-                      char colorspace[IMA_MAX_SPACE]);
-struct anim *openanim_noload(const char *filepath,
-                             int flags,
-                             int streamindex,
-                             char colorspace[IMA_MAX_SPACE]);
+struct ImBufAnim *openanim(const char *filepath,
+                           int flags,
+                           int streamindex,
+                           char colorspace[IMA_MAX_SPACE]);
+struct ImBufAnim *openanim_noload(const char *filepath,
+                                  int flags,
+                                  int streamindex,
+                                  char colorspace[IMA_MAX_SPACE]);
 
 void BKE_image_tag_time(struct Image *ima);
 
@@ -438,7 +438,7 @@ void BKE_image_get_size(struct Image *image, struct ImageUser *iuser, int *r_wid
 void BKE_image_get_size_fl(struct Image *image, struct ImageUser *iuser, float r_size[2]);
 void BKE_image_get_aspect(struct Image *image, float *r_aspx, float *r_aspy);
 
-/* image_gen.c */
+/* `image_gen.cc` */
 
 void BKE_image_buf_fill_color(
     unsigned char *rect, float *rect_float, int width, int height, const float color[4]);

@@ -1,5 +1,6 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later
- * Copyright 2001-2002 NaN Holding BV. All rights reserved. */
+/* SPDX-FileCopyrightText: 2001-2002 NaN Holding BV. All rights reserved.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later */
 
 /**
  * Copyright (C) 2001 NaN Technologies B.V.
@@ -296,7 +297,8 @@ bool processEvent(GHOST_EventHandle hEvent, GHOST_TUserDataPtr userData)
       else {
         view_rotz -= 5.f;
       }
-    } break;
+      break;
+    }
 
     case GHOST_kEventKeyUp:
       break;
@@ -312,7 +314,8 @@ bool processEvent(GHOST_EventHandle hEvent, GHOST_TUserDataPtr userData)
           }
           sCursor = (GHOST_TStandardCursor)cursor;
           GHOST_SetCursorShape(window, sCursor);
-        } break;
+          break;
+        }
         case GHOST_kKeyF:
           if (!GHOST_GetFullScreen(shSystem)) {
             /* Begin full-screen mode. */
@@ -341,7 +344,8 @@ bool processEvent(GHOST_EventHandle hEvent, GHOST_TUserDataPtr userData)
         case GHOST_kKeyH: {
           visibility = GHOST_GetCursorVisibility(window);
           GHOST_SetCursorVisibility(window, !visibility);
-        } break;
+          break;
+        }
         case GHOST_kKeyQ:
           if (GHOST_GetFullScreen(shSystem)) {
             GHOST_EndFullScreen(shSystem);
@@ -368,11 +372,13 @@ bool processEvent(GHOST_EventHandle hEvent, GHOST_TUserDataPtr userData)
             free(ntitle);
             free(title);
           }
-        } break;
+          break;
+        }
         default:
           break;
       }
-    } break;
+      break;
+    }
 
     case GHOST_kEventWindowClose: {
       GHOST_WindowHandle window2 = GHOST_GetEventWindow(hEvent);
@@ -386,7 +392,8 @@ bool processEvent(GHOST_EventHandle hEvent, GHOST_TUserDataPtr userData)
         }
         GHOST_DisposeWindow(shSystem, window2);
       }
-    } break;
+      break;
+    }
 
     case GHOST_kEventWindowActivate:
       handled = false;
@@ -396,13 +403,14 @@ bool processEvent(GHOST_EventHandle hEvent, GHOST_TUserDataPtr userData)
       break;
     case GHOST_kEventWindowUpdate: {
       GHOST_WindowHandle window2 = GHOST_GetEventWindow(hEvent);
-      if (!GHOST_ValidWindow(shSystem, window2))
+      if (!GHOST_ValidWindow(shSystem, window2)) {
         break;
+      }
       setViewPortGL(window2);
       drawGL();
       GHOST_SwapWindowBuffers(window2);
-    } break;
-
+      break;
+    }
     default:
       handled = false;
       break;
