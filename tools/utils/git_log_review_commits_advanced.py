@@ -676,7 +676,7 @@ def main():
                   )
             ch = getch()
 
-            if ch == b'\x03' or ch == b'x':
+            if ch in (b'\x03', b'x'):
                 # Ctrl+C
                 exit_message()
                 print("Goodbye! (%s)" % c.sha1.decode())
@@ -710,7 +710,7 @@ def main():
                         if ch == b'\x7f':  # backspace
                             done_main = False
                             break
-                        elif ch == b'\x03' or ch == b'x':
+                        elif ch in (b'\x03', b'x'):
                             # Ctrl+C
                             exit_message()
                             print("Goodbye! (%s)" % c.sha1.decode())
