@@ -1267,7 +1267,7 @@ class _defs_edit_curve:
         )
 
     @ToolDef.from_fn
-    def curve_radius():
+    def curve_radius(self):
         return dict(
             idname="builtin.radius",
             label="Radius",
