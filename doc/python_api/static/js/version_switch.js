@@ -51,7 +51,7 @@ var Popover = function() {
          that.afterLoad();
          return true;
        }).fail(function() {
-        console.log("Version Switch Error: versions.json could not be loaded.");
+        
         that.$btn.addClass("disabled");
         return false;
       });
