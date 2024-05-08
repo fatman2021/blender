@@ -289,7 +289,8 @@ class USERPREF_PT_interface_temporary_windows(InterfacePanel, CenterAlignMixIn, 
     bl_parent_id = "USERPREF_PT_interface_editors"
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         view = prefs.view
 
@@ -491,7 +492,8 @@ class USERPREF_PT_edit_weight_paint(EditingPanel, CenterAlignMixIn, Panel):
     bl_label = "Weight Paint"
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         view = prefs.view
 
@@ -718,7 +720,8 @@ class USERPREF_PT_system_memory(SystemPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_system_video_sequencer(SystemPanel, CenterAlignMixIn, Panel):
     bl_label = "Video Sequencer"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         system = prefs.system
         # edit = prefs.edit
@@ -1618,7 +1621,8 @@ class SaveLoadPanel:
 class USERPREF_PT_saveload_blend(SaveLoadPanel, CenterAlignMixIn, Panel):
     bl_label = "Blend Files"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         paths = prefs.filepaths
         view = prefs.view
@@ -1659,7 +1663,8 @@ class USERPREF_PT_saveload_blend(SaveLoadPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_saveload_file_browser(SaveLoadPanel, CenterAlignMixIn, Panel):
     bl_label = "File Browser"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         paths = prefs.filepaths
 
@@ -1741,7 +1746,8 @@ class USERPREF_PT_input_touchpad(InputPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_input_tablet(InputPanel, CenterAlignMixIn, Panel):
     bl_label = "Tablet"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         inputs = prefs.inputs
 

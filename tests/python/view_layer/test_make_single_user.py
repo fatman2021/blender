@@ -16,7 +16,8 @@ from view_layer_common import *
 # ############################################################
 
 class UnitTesting(ViewLayerTesting):
-    def test_make_single_user(self):
+    @staticmethod
+    def test_make_single_user():
         """
         Really basic test, just to check for crashes on basic files.
         """

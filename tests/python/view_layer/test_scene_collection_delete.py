@@ -16,7 +16,8 @@ from view_layer_common import *
 # ############################################################
 
 class UnitTesting(ViewLayerTesting):
-    def test_scene_collection_delete(self):
+    @staticmethod
+    def test_scene_collection_delete():
         """
         See if a scene collection can be properly deleted even
         when linked

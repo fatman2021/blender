@@ -532,7 +532,8 @@ class TestBlendLibDataLibrariesLoad(TestBlendLibLinkHelper):
 
         return output_lib_path
 
-    def do_libload(self, **load_kwargs):
+    @staticmethod
+    def do_libload(**load_kwargs):
         with bpy.data.libraries.load(**load_kwargs) as lib_ctx:
             lib_src, lib_link = lib_ctx
 

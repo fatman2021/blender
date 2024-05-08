@@ -16,7 +16,8 @@ from view_layer_common import *
 # ############################################################
 
 class UnitTesting(ViewLayerTesting):
-    def test_group_create_basic(self):
+    @staticmethod
+    def test_group_create_basic():
         """
         See if the creation of new groups is not crashing anything.
         """

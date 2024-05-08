@@ -34,7 +34,8 @@ class OBJECT_OT_simple_exporter(bpy.types.Operator):
 
         return {'FINISHED'}
 
-    def is_object_instance_from_selected(self, object_instance):
+    @staticmethod
+    def is_object_instance_from_selected(object_instance):
         # For instanced objects we check selection of their instancer (more accurately: check
         # selection status of the original object corresponding to the instancer).
         if object_instance.parent:

@@ -75,7 +75,8 @@ class ViewOperatorRayCast(bpy.types.Operator):
     bl_idname = "view3d.modal_operator_raycast"
     bl_label = "Ray-cast View Operator"
 
-    def modal(self, context, event):
+    @staticmethod
+    def modal(context, event):
         if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
             # allow navigation
             return {'PASS_THROUGH'}

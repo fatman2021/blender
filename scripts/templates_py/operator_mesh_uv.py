@@ -29,7 +29,8 @@ class UvOperator(bpy.types.Operator):
         obj = context.active_object
         return obj and obj.type == 'MESH' and obj.mode == 'EDIT'
 
-    def execute(self, context):
+    @staticmethod
+    def execute(context):
         main(context)
         return {'FINISHED'}
 

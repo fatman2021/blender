@@ -15,7 +15,8 @@ class SimpleOperator(bpy.types.Operator):
     def poll(cls, context):
         return context.active_object is not None
 
-    def execute(self, context):
+    @staticmethod
+    def execute(context):
         main(context)
         return {'FINISHED'}
 

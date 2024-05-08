@@ -13,7 +13,8 @@ class OBJECT_OT_original_example(bpy.types.Operator):
     bl_label = "DEG Access Original Object"
     bl_idname = "object.original_example"
 
-    def check_object_selected(self, object_eval):
+    @staticmethod
+    def check_object_selected(object_eval):
         # Selection depends on a context and is only valid for original objects. This means we need
         # to request the original object from the known evaluated one.
         #

@@ -14,7 +14,8 @@ class OBJECT_OT_object_instances(bpy.types.Operator):
     bl_label = "DEG Iterate Object Instances"
     bl_idname = "object.object_instances"
 
-    def execute(self, context):
+    @staticmethod
+    def execute(context):
         depsgraph = context.evaluated_depsgraph_get()
         for object_instance in depsgraph.object_instances:
             # This is an object which is being instanced.
