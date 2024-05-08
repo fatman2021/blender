@@ -11,17 +11,16 @@ class MyTool(WorkSpaceTool):
     # The prefix of the idname should be your add-on name.
     bl_idname = "my_template.my_circle_select"
     bl_label = "My Circle Select"
-    bl_description = (
-        "This is a tooltip\n"
-        "with multiple lines"
-    )
+    bl_description = "This is a tooltip\n" "with multiple lines"
     bl_icon = "ops.generic.select_circle"
     bl_widget = None
     bl_keymap = (
-        ("view3d.select_circle", {"type": 'LEFTMOUSE', "value": 'PRESS'},
-         {"properties": [("wait_for_input", False)]}),
-        ("view3d.select_circle", {"type": 'LEFTMOUSE', "value": 'PRESS', "ctrl": True},
-         {"properties": [("mode", 'SUB'), ("wait_for_input", False)]}),
+        ("view3d.select_circle", {"type": 'LEFTMOUSE', "value": 'PRESS'}, {"properties": [("wait_for_input", False)]}),
+        (
+            "view3d.select_circle",
+            {"type": 'LEFTMOUSE', "value": 'PRESS', "ctrl": True},
+            {"properties": [("mode", 'SUB'), ("wait_for_input", False)]},
+        ),
     )
 
     @staticmethod
@@ -37,16 +36,16 @@ class MyOtherTool(WorkSpaceTool):
 
     bl_idname = "my_template.my_other_select"
     bl_label = "My Lasso Tool Select"
-    bl_description = (
-        "This is a tooltip\n"
-        "with multiple lines"
-    )
+    bl_description = "This is a tooltip\n" "with multiple lines"
     bl_icon = "ops.generic.select_lasso"
     bl_widget = None
     bl_keymap = (
         ("view3d.select_lasso", {"type": 'LEFTMOUSE', "value": 'PRESS'}, None),
-        ("view3d.select_lasso", {"type": 'LEFTMOUSE', "value": 'PRESS', "ctrl": True},
-         {"properties": [("mode", 'SUB')]}),
+        (
+            "view3d.select_lasso",
+            {"type": 'LEFTMOUSE', "value": 'PRESS', "ctrl": True},
+            {"properties": [("mode", 'SUB')]},
+        ),
     )
 
     @staticmethod
@@ -68,9 +67,7 @@ class MyWidgetTool(WorkSpaceTool):
         ("radius", 75.0),
         ("backdrop_fill_alpha", 0.0),
     ]
-    bl_keymap = (
-        ("transform.translate", {"type": 'LEFTMOUSE', "value": 'PRESS'}, None),
-    )
+    bl_keymap = (("transform.translate", {"type": 'LEFTMOUSE', "value": 'PRESS'}, None),)
 
     @staticmethod
     def draw_settings(context, layout, tool):

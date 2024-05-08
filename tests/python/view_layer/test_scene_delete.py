@@ -10,12 +10,13 @@ import unittest
 
 from view_layer_common import *
 
-
 # ############################################################
 # Testing
 # ############################################################
 
+
 class UnitTesting(ViewLayerTesting):
+
     @staticmethod
     def test_scene_delete():
         """

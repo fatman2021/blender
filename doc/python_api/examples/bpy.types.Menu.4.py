@@ -23,6 +23,7 @@ def dump(obj, text):
 
 class WM_OT_button_context_test(bpy.types.Operator):
     """Right click entry test"""
+
     bl_idname = "wm.button_context_test"
     bl_label = "Run Context Test"
 
