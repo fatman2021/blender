@@ -30,7 +30,8 @@ class WM_OT_button_context_test(bpy.types.Operator):
     def poll(cls, context):
         return context.active_object is not None
 
-    def execute(self, context):
+    @staticmethod
+    def execute(context):
         value = getattr(context, "button_pointer", None)
         if value is not None:
             dump(value, "button_pointer")

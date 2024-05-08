@@ -16,7 +16,8 @@ from view_layer_common import *
 # ############################################################
 
 class UnitTesting(ViewLayerTesting):
-    def test_scene_delete(self):
+    @staticmethod
+    def test_scene_delete():
         """
         See if a scene can be properly deleted
         """

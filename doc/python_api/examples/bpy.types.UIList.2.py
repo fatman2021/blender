@@ -100,7 +100,8 @@ class MESH_UL_vgroups_slow(bpy.types.UIList):
         icon = 'TRIA_UP' if self.use_filter_orderby_invert else 'TRIA_DOWN'
         row.prop(self, "use_filter_orderby_invert", text="", icon=icon)
 
-    def filter_items_empty_vgroups(self, context, vgroups):
+    @staticmethod
+    def filter_items_empty_vgroups(context, vgroups):
         # This helper function checks vgroups to find out whether they are empty, and what's their average weights.
         # TODO: This should be RNA helper actually (a vgroup prop like "raw_data: ((vidx, vweight), etc.)").
         #       Too slow for python!

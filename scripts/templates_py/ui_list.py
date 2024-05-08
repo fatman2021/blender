@@ -27,7 +27,8 @@ class MESH_UL_mylist(bpy.types.UIList):
         pass
 
     # Called once to filter/reorder items.
-    def filter_items(self, context, data, propname):
+    @staticmethod
+    def filter_items(context, data, propname):
         # This function gets the collection property (as the usual tuple (data, propname)), and must return two lists:
         # * The first one is for filtering, it must contain 32bit integers were self.bitflag_filter_item marks the
         #   matching item as filtered (i.e. to be shown), and 31 other bits are free for custom needs. Here we use the

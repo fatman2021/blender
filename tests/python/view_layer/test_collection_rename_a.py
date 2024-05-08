@@ -16,7 +16,8 @@ from view_layer_common import *
 # ############################################################
 
 class UnitTesting(ViewLayerTesting):
-    def setup_family(self):
+    @staticmethod
+    def setup_family():
         import bpy
         scene = bpy.context.scene
 

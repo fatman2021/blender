@@ -5,6 +5,7 @@ class BUILTIN_KSI_hello(bpy.types.KeyingSetInfo):
     bl_label = "Hello World KeyingSet"
 
     # poll - test for whether Keying Set can be used at all
+    @staticmethod
     def poll(ksi, context):
         return context.active_object or context.selected_objects
 
@@ -14,6 +15,7 @@ class BUILTIN_KSI_hello(bpy.types.KeyingSetInfo):
             ksi.generate(context, ks, ob)
 
     # generator - populate Keying Set with property paths to use
+    @staticmethod
     def generate(ksi, context, ks, data):
         id_block = data.id_data
 

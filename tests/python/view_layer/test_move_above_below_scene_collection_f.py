@@ -16,7 +16,8 @@ from view_layer_common import *
 # ############################################################
 
 class UnitTesting(MoveSceneCollectionTesting):
-    def get_reference_scene_tree_map(self):
+    @staticmethod
+    def get_reference_scene_tree_map():
         reference_tree_map = [
             ['B', None],
             ['C', [

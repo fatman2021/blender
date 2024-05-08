@@ -25,7 +25,8 @@ class HelloWorldOperator(bpy.types.Operator):
     bl_idname = "wm.hello_world"
     bl_label = "Minimal Operator"
 
-    def execute(self, context):
+    @staticmethod
+    def execute(context):
         print("Hello World")
         return {'FINISHED'}
 

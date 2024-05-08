@@ -16,7 +16,8 @@ from view_layer_common import *
 # ############################################################
 
 class UnitTesting(ViewLayerTesting):
-    def test_view_layer_rename(self):
+    @staticmethod
+    def test_view_layer_rename():
         """
         See if we can rename view layers.
         """

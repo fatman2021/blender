@@ -24,6 +24,7 @@ class MyTool(WorkSpaceTool):
          {"properties": [("mode", 'SUB'), ("wait_for_input", False)]}),
     )
 
+    @staticmethod
     def draw_settings(context, layout, tool):
         props = tool.operator_properties("view3d.select_circle")
         layout.prop(props, "mode")
@@ -48,6 +49,7 @@ class MyOtherTool(WorkSpaceTool):
          {"properties": [("mode", 'SUB')]}),
     )
 
+    @staticmethod
     def draw_settings(context, layout, tool):
         props = tool.operator_properties("view3d.select_lasso")
         layout.prop(props, "mode")
@@ -70,6 +72,7 @@ class MyWidgetTool(WorkSpaceTool):
         ("transform.translate", {"type": 'LEFTMOUSE', "value": 'PRESS'}, None),
     )
 
+    @staticmethod
     def draw_settings(context, layout, tool):
         props = tool.operator_properties("transform.translate")
         layout.prop(props, "mode")
