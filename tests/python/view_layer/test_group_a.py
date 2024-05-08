@@ -10,18 +10,20 @@ import unittest
 
 from view_layer_common import *
 
-
 # ############################################################
 # Testing
 # ############################################################
 
+
 class UnitTesting(ViewLayerTesting):
+
     @staticmethod
     def test_group_create_basic():
         """
         See if the creation of new groups is not crashing anything.
         """
         import bpy
+
         scene = bpy.context.scene
         layer_collection = bpy.context.layer_collection
 
