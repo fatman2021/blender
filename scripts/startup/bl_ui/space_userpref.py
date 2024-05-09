@@ -140,11 +140,7 @@ class USERPREF_PT_save_preferences(Panel):
     @classmethod
     def poll(cls, context):
         # Hide when header is visible
-        for region in context.area.regions:
-            if region.type == 'HEADER' and region.height <= 1:
-                return True
-
-        return False
+        return any(region.type == 'HEADER' and region.height <= 1 for region in context.area.regions)
 
     def draw(self, context):
         layout = self.layout.row()
