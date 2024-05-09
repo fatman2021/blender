@@ -10,15 +10,17 @@ import unittest
 
 from view_layer_common import *
 
-
 # ############################################################
 # Testing
 # ############################################################
 
+
 class UnitTesting(ViewLayerTesting):
+
     @staticmethod
     def setup_family():
         import bpy
+
         scene = bpy.context.scene
 
         # Just add a bunch of collections on which we can do various tests.

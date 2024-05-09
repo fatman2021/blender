@@ -18,6 +18,7 @@ of undo will be confusing for the user.
    Operator subclasses must be registered before accessing them from blender.
 
 """
+
 import bpy
 
 

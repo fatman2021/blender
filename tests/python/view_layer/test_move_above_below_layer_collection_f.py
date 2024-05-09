@@ -10,44 +10,60 @@ import unittest
 
 from view_layer_common import *
 
-
 # ############################################################
 # Testing
 # ############################################################
 
+
 class UnitTesting(MoveLayerCollectionTesting):
+
     @staticmethod
     def get_reference_scene_tree_map():
         reference_tree_map = [
-            ['A', [
-                ['i', None],
-                ['ii', None],
-                ['iii', None],
-            ]],
+            [
+                'A',
+                [
+                    ['i', None],
+                    ['ii', None],
+                    ['iii', None],
+                ],
+            ],
             ['B', None],
-            ['C', [
-                ['1', None],
-                ['3', [
-                    ['dog', None],
-                    ['cat', None],
-                ]],
-                ['2', None],
-            ]],
+            [
+                'C',
+                [
+                    ['1', None],
+                    [
+                        '3',
+                        [
+                            ['dog', None],
+                            ['cat', None],
+                        ],
+                    ],
+                    ['2', None],
+                ],
+            ],
         ]
         return reference_tree_map
 
     def get_reference_layers_tree_map(self):
         reference_layers_map = [
-            ['Layer 1', [
-                'Master Collection',
-                'C',
-                '3',
-            ]],
-            ['Layer 2', [
-                'C',
-                'dog',
-                'cat',
-            ]],
+            [
+                'Layer 1',
+                [
+                    'Master Collection',
+                    'C',
+                    '3',
+                ],
+            ],
+            [
+                'Layer 2',
+                [
+                    'C',
+                    'dog',
+                    'cat',
+                ],
+            ],
         ]
         return reference_layers_map
 

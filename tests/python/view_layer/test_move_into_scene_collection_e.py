@@ -10,30 +10,43 @@ import unittest
 
 from view_layer_common import *
 
-
 # ############################################################
 # Testing
 # ############################################################
 
+
 class UnitTesting(MoveSceneCollectionTesting):
+
     @staticmethod
     def get_reference_scene_tree_map():
         reference_tree_map = [
-            ['A', [
-                ['i', None],
-                ['ii', None],
-                ['iii', None],
-            ]],
-            ['C', [
-                ['1', None],
-                ['2', None],
-                ['3', [
-                    ['dog', None],
-                    ['cat', [
-                            ['B', None],
-                    ]],
-                ]],
-            ]],
+            [
+                'A',
+                [
+                    ['i', None],
+                    ['ii', None],
+                    ['iii', None],
+                ],
+            ],
+            [
+                'C',
+                [
+                    ['1', None],
+                    ['2', None],
+                    [
+                        '3',
+                        [
+                            ['dog', None],
+                            [
+                                'cat',
+                                [
+                                    ['B', None],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ]
         return reference_tree_map
 

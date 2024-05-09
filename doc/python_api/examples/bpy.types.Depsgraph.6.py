@@ -5,11 +5,13 @@ Dependency graph: Simple exporter
 This example is a combination of all previous ones, and shows how to write a simple exporter
 script.
 """
+
 import bpy
 
 
 class OBJECT_OT_simple_exporter(bpy.types.Operator):
     """Simple (fake) exporter of selected objects"""
+
     bl_label = "DEG Export Selected"
     bl_idname = "object.simple_exporter"
 
@@ -28,8 +30,7 @@ class OBJECT_OT_simple_exporter(bpy.types.Operator):
             if mesh is None:
                 # Happens for non-geometry objects.
                 continue
-            print(f"Exporting mesh with {len(mesh.vertices)} vertices "
-                  f"at {object_instance.matrix_world}")
+            print(f"Exporting mesh with {len(mesh.vertices)} vertices " f"at {object_instance.matrix_world}")
             object_instace.to_mesh_clear()
 
         return {'FINISHED'}

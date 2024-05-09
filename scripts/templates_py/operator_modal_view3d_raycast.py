@@ -72,6 +72,7 @@ def main(context, event):
 
 class ViewOperatorRayCast(bpy.types.Operator):
     """Modal object selection with a ray cast"""
+
     bl_idname = "view3d.modal_operator_raycast"
     bl_label = "Ray-cast View Operator"
 

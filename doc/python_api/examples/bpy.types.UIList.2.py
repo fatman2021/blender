@@ -6,6 +6,7 @@ This script is an extended version of the ``UIList`` subclass used to show verte
 because iterating over all vertices in a 'draw' function is a very bad idea for UI performances! However, it's a good
 example of how to create/use filtering/reordering callbacks.
 """
+
 import bpy
 
 
@@ -36,12 +37,17 @@ class MESH_UL_vgroups_slow(bpy.types.UIList):
 
     # This allows us to have mutually exclusive options, which are also all disable-able!
     def _gen_order_update(name1, name2):
+
         def _u(self, ctxt):
-            if (getattr(self, name1)):
+            if getattr(self, name1):
                 setattr(self, name2, False)
+
         return _u
+
     use_order_name: bpy.props.BoolProperty(
-        name="Name", default=False, options=set(),
+        name="Name",
+        default=False,
+        options=set(),
         description="Sort groups by their name (case-insensitive)",
         update=_gen_order_update("use_order_name", "use_order_importance"),
     )
@@ -110,6 +116,7 @@ class MESH_UL_vgroups_slow(bpy.types.UIList):
         if hasattr(obj_data, "vertices"):  # Mesh data
             if obj_data.is_editmode:
                 import bmesh
+
                 bm = bmesh.from_edit_mesh(obj_data)
                 # only ever one deform weight layer
                 dvert_lay = bm.verts.layers.deform.active
@@ -156,8 +163,9 @@ class MESH_UL_vgroups_slow(bpy.types.UIList):
 
         # Filtering by name
         if self.filter_name:
-            flt_flags = helper_funcs.filter_items_by_name(self.filter_name, self.bitflag_filter_item, vgroups, "name",
-                                                          reverse=self.use_filter_name_reverse)
+            flt_flags = helper_funcs.filter_items_by_name(
+                self.filter_name, self.bitflag_filter_item, vgroups, "name", reverse=self.use_filter_name_reverse
+            )
         if not flt_flags:
             flt_flags = [self.bitflag_filter_item] * len(vgroups)
 
@@ -183,6 +191,7 @@ class MESH_UL_vgroups_slow(bpy.types.UIList):
 # Minimal code to use above UIList...
 class UIListPanelExample2(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
+
     bl_label = "UIList Example 2 Panel"
     bl_idname = "OBJECT_PT_ui_list_example_2"
     bl_space_type = 'PROPERTIES'

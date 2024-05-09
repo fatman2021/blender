@@ -10,18 +10,20 @@ import unittest
 
 from view_layer_common import *
 
-
 # ############################################################
 # Testing
 # ############################################################
 
+
 class UnitTesting(ViewLayerTesting):
+
     @staticmethod
     def test_make_single_user():
         """
         Really basic test, just to check for crashes on basic files.
         """
         import bpy
+
         scene = bpy.context.scene
         master_collection = scene.master_collection
         view_layer = bpy.context.view_layer
@@ -35,8 +37,7 @@ class UnitTesting(ViewLayerTesting):
             scene.view_layers.remove(v)
 
         while master_collection.collections:
-            master_collection.collections.remove(
-                master_collection.collections[0])
+            master_collection.collections.remove(master_collection.collections[0])
 
         view_layer.collections.link(master_collection)
         ob.select_set(True)

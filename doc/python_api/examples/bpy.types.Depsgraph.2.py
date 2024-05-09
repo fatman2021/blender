@@ -5,11 +5,13 @@ Dependency graph: Original object example
 This example demonstrates access to the original ID.
 Such access is needed to check whether object is selected, or to compare pointers.
 """
+
 import bpy
 
 
 class OBJECT_OT_original_example(bpy.types.Operator):
     """Access original object and do something with it"""
+
     bl_label = "DEG Access Original Object"
     bl_idname = "object.original_example"
 
