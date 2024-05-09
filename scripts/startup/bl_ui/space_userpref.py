@@ -193,7 +193,8 @@ class InterfacePanel:
 class USERPREF_PT_interface_display(InterfacePanel, CenterAlignMixIn, Panel):
     bl_label = "Display"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         view = prefs.view
 
@@ -222,7 +223,8 @@ class USERPREF_PT_interface_text(InterfacePanel, CenterAlignMixIn, Panel):
     bl_label = "Text Rendering"
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         view = prefs.view
 
@@ -246,7 +248,8 @@ class USERPREF_PT_interface_translation(InterfacePanel, CenterAlignMixIn, Panel)
     def poll(cls, _context):
         return bpy.app.build_options.international
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         view = prefs.view
 
@@ -263,7 +266,8 @@ class USERPREF_PT_interface_translation(InterfacePanel, CenterAlignMixIn, Panel)
 class USERPREF_PT_interface_editors(InterfacePanel, CenterAlignMixIn, Panel):
     bl_label = "Editors"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         view = prefs.view
         system = prefs.system
@@ -296,7 +300,8 @@ class USERPREF_PT_interface_statusbar(InterfacePanel, CenterAlignMixIn, Panel):
     bl_parent_id = "USERPREF_PT_interface_editors"
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         view = prefs.view
 
@@ -326,7 +331,8 @@ class USERPREF_PT_interface_menus_mouse_over(InterfacePanel, CenterAlignMixIn, P
 
         self.layout.prop(view, "use_mouse_over_open", text="")
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         view = prefs.view
 
@@ -342,7 +348,8 @@ class USERPREF_PT_interface_menus_pie(InterfacePanel, CenterAlignMixIn, Panel):
     bl_label = "Pie Menus"
     bl_parent_id = "USERPREF_PT_interface_menus"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         view = prefs.view
 
@@ -377,7 +384,8 @@ class USERPREF_PT_edit_objects_new(EditingPanel, CenterAlignMixIn, Panel):
     bl_label = "New Objects"
     bl_parent_id = "USERPREF_PT_edit_objects"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         edit = prefs.edit
 
@@ -394,7 +402,8 @@ class USERPREF_PT_edit_objects_duplicate_data(EditingPanel, CenterAlignMixIn, Pa
     bl_parent_id = "USERPREF_PT_edit_objects"
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         edit = prefs.edit
 
@@ -447,7 +456,8 @@ class USERPREF_PT_edit_objects_duplicate_data(EditingPanel, CenterAlignMixIn, Pa
 class USERPREF_PT_edit_cursor(EditingPanel, CenterAlignMixIn, Panel):
     bl_label = "3D Cursor"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         edit = prefs.edit
 
@@ -460,7 +470,8 @@ class USERPREF_PT_edit_gpencil(EditingPanel, CenterAlignMixIn, Panel):
     bl_label = "Grease Pencil"
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         edit = prefs.edit
 
@@ -472,7 +483,8 @@ class USERPREF_PT_edit_gpencil(EditingPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_edit_annotations(EditingPanel, CenterAlignMixIn, Panel):
     bl_label = "Annotations"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         edit = prefs.edit
 
@@ -503,7 +515,8 @@ class USERPREF_PT_edit_text_editor(EditingPanel, CenterAlignMixIn, Panel):
     bl_label = "Text Editor"
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         edit = prefs.edit
 
@@ -514,7 +527,8 @@ class USERPREF_PT_edit_node_editor(EditingPanel, CenterAlignMixIn, Panel):
     bl_label = "Node Editor"
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         edit = prefs.edit
 
@@ -532,7 +546,8 @@ class USERPREF_PT_edit_misc(EditingPanel, CenterAlignMixIn, Panel):
     bl_label = "Miscellaneous"
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         edit = prefs.edit
 
@@ -553,7 +568,8 @@ class AnimationPanel:
 class USERPREF_PT_animation_timeline(AnimationPanel, CenterAlignMixIn, Panel):
     bl_label = "Timeline"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         view = prefs.view
         edit = prefs.edit
@@ -573,7 +589,8 @@ class USERPREF_PT_animation_timeline(AnimationPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_animation_keyframes(AnimationPanel, CenterAlignMixIn, Panel):
     bl_label = "Keyframes"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         edit = prefs.edit
 
@@ -595,7 +612,8 @@ class USERPREF_PT_animation_keyframes(AnimationPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_animation_fcurves(AnimationPanel, CenterAlignMixIn, Panel):
     bl_label = "F-Curves"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         edit = prefs.edit
 
@@ -625,7 +643,8 @@ class USERPREF_PT_system_sound(SystemPanel, CenterAlignMixIn, Panel):
     bl_label = "Sound"
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         system = prefs.system
 
@@ -642,7 +661,8 @@ class USERPREF_PT_system_sound(SystemPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_system_cycles_devices(SystemPanel, CenterAlignMixIn, Panel):
     bl_label = "Cycles Render Devices"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
 
         col = layout.column()
@@ -669,7 +689,8 @@ class USERPREF_PT_system_os_settings(SystemPanel, CenterAlignMixIn, Panel):
 
         return sys.platform[:3] == "win"
 
-    def draw_centered(self, _context, layout):
+    @staticmethod
+    def draw_centered(_context, layout):
         if _context.preferences.system.is_microsoft_store_install:
             layout.label(text="Microsoft Store installation")
             layout.label(text="Use Windows 'Default Apps' to associate with blend files")
@@ -685,7 +706,8 @@ class USERPREF_PT_system_os_settings(SystemPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_system_memory(SystemPanel, CenterAlignMixIn, Panel):
     bl_label = "Memory & Limits"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         system = prefs.system
         edit = prefs.edit
@@ -751,7 +773,8 @@ class ViewportPanel:
 class USERPREF_PT_viewport_display(ViewportPanel, CenterAlignMixIn, Panel):
     bl_label = "Display"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         view = prefs.view
 
@@ -791,7 +814,8 @@ class USERPREF_PT_viewport_display(ViewportPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_viewport_quality(ViewportPanel, CenterAlignMixIn, Panel):
     bl_label = "Quality"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         system = prefs.system
 
@@ -806,7 +830,8 @@ class USERPREF_PT_viewport_quality(ViewportPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_viewport_textures(ViewportPanel, CenterAlignMixIn, Panel):
     bl_label = "Textures"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         system = prefs.system
 
@@ -821,7 +846,8 @@ class USERPREF_PT_viewport_selection(ViewportPanel, CenterAlignMixIn, Panel):
     bl_label = "Selection"
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         system = prefs.system
 
@@ -832,7 +858,8 @@ class USERPREF_PT_viewport_subdivision(ViewportPanel, CenterAlignMixIn, Panel):
     bl_label = "Subdivision"
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         system = prefs.system
 
@@ -957,7 +984,8 @@ class USERPREF_PT_theme_interface_state(ThemePanel, CenterAlignMixIn, Panel):
     bl_options = {'DEFAULT_CLOSED'}
     bl_parent_id = "USERPREF_PT_theme_user_interface"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         theme = context.preferences.themes[0]
         ui_state = theme.user_interface.wcol_state
 
@@ -992,7 +1020,8 @@ class USERPREF_PT_theme_interface_styles(ThemePanel, CenterAlignMixIn, Panel):
     bl_options = {'DEFAULT_CLOSED'}
     bl_parent_id = "USERPREF_PT_theme_user_interface"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         theme = context.preferences.themes[0]
         ui = theme.user_interface
 
@@ -1018,7 +1047,8 @@ class USERPREF_PT_theme_interface_transparent_checker(ThemePanel, CenterAlignMix
     bl_options = {'DEFAULT_CLOSED'}
     bl_parent_id = "USERPREF_PT_theme_user_interface"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         theme = context.preferences.themes[0]
         ui = theme.user_interface
 
@@ -1037,7 +1067,8 @@ class USERPREF_PT_theme_interface_gizmos(ThemePanel, CenterAlignMixIn, Panel):
     bl_options = {'DEFAULT_CLOSED'}
     bl_parent_id = "USERPREF_PT_theme_user_interface"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         theme = context.preferences.themes[0]
         ui = theme.user_interface
 
@@ -1063,7 +1094,8 @@ class USERPREF_PT_theme_interface_icons(ThemePanel, CenterAlignMixIn, Panel):
     bl_options = {'DEFAULT_CLOSED'}
     bl_parent_id = "USERPREF_PT_theme_user_interface"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         theme = context.preferences.themes[0]
         ui = theme.user_interface
 
@@ -1132,7 +1164,8 @@ class USERPREF_PT_theme_bone_color_sets(ThemePanel, CenterAlignMixIn, Panel):
 
         layout.label(icon='COLOR')
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         theme = context.preferences.themes[0]
 
         layout.use_property_split = True
@@ -1157,7 +1190,8 @@ class USERPREF_PT_theme_collection_colors(ThemePanel, CenterAlignMixIn, Panel):
 
         layout.label(icon='OUTLINER_COLLECTION')
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         theme = context.preferences.themes[0]
 
         layout.use_property_split = True
@@ -1176,7 +1210,8 @@ class USERPREF_PT_theme_strip_colors(ThemePanel, CenterAlignMixIn, Panel):
 
         layout.label(icon='SEQ_STRIP_DUPLICATE')
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         theme = context.preferences.themes[0]
 
         layout.use_property_split = True
@@ -1714,7 +1749,8 @@ class InputPanel:
 class USERPREF_PT_input_keyboard(InputPanel, CenterAlignMixIn, Panel):
     bl_label = "Keyboard"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         inputs = prefs.inputs
 
@@ -1725,7 +1761,8 @@ class USERPREF_PT_input_keyboard(InputPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_input_mouse(InputPanel, CenterAlignMixIn, Panel):
     bl_label = "Mouse"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         import sys
 
         prefs = context.preferences
@@ -1762,7 +1799,8 @@ class USERPREF_PT_input_touchpad(InputPanel, CenterAlignMixIn, Panel):
 
         return sys.platform[:3] == "win" or sys.platform == "darwin"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         inputs = prefs.inputs
 
@@ -1799,7 +1837,8 @@ class USERPREF_PT_input_ndof(InputPanel, CenterAlignMixIn, Panel):
         inputs = prefs.inputs
         return inputs.use_ndof
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         inputs = prefs.inputs
 
@@ -1819,7 +1858,8 @@ class NavigationPanel:
 class USERPREF_PT_navigation_orbit(NavigationPanel, CenterAlignMixIn, Panel):
     bl_label = "Orbit & Pan"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         inputs = prefs.inputs
         view = prefs.view
@@ -1847,7 +1887,8 @@ class USERPREF_PT_navigation_orbit(NavigationPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_navigation_zoom(NavigationPanel, CenterAlignMixIn, Panel):
     bl_label = "Zoom"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         inputs = prefs.inputs
 
@@ -1868,7 +1909,8 @@ class USERPREF_PT_navigation_zoom(NavigationPanel, CenterAlignMixIn, Panel):
 class USERPREF_PT_navigation_fly_walk(NavigationPanel, CenterAlignMixIn, Panel):
     bl_label = "Fly & Walk"
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         inputs = prefs.inputs
 
@@ -1885,7 +1927,8 @@ class USERPREF_PT_navigation_fly_walk_navigation(NavigationPanel, CenterAlignMix
         prefs = context.preferences
         return prefs.inputs.navigation_mode == 'WALK'
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         inputs = prefs.inputs
         walk = inputs.walk_navigation
@@ -1917,7 +1960,8 @@ class USERPREF_PT_navigation_fly_walk_gravity(NavigationPanel, CenterAlignMixIn,
 
         self.layout.prop(walk, "use_gravity", text="")
 
-    def draw_centered(self, context, layout):
+    @staticmethod
+    def draw_centered(context, layout):
         prefs = context.preferences
         inputs = prefs.inputs
         walk = inputs.walk_navigation
@@ -2495,7 +2539,8 @@ class StudioLightPanelMixin:
     def get_error_message(self):
         return rpt_("No custom %s configured") % self.bl_label
 
-    def draw_studio_light(self, layout, studio_light):
+    @staticmethod
+    def draw_studio_light(layout, studio_light):
         box = layout.box()
         row = box.row()
 
