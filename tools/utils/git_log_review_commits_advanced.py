@@ -2,7 +2,6 @@
 # SPDX-FileCopyrightText: 2023 Blender Authors
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
-
 """
 This is a tool for reviewing commit ranges, writing into accept/reject files,
 and optionally generate release-log-ready data.
@@ -29,10 +28,10 @@ To exclude all commits from some given files, by sha1 or by commit message (from
 
 """
 
-import os
-import sys
 import io
+import os
 import re
+import sys
 
 ACCEPT_FILE = "review_accept.txt"
 REJECT_FILE = "review_reject.txt"
@@ -44,13 +43,18 @@ IGNORE_START_LINE = "<!-- IGNORE_START -->"
 IGNORE_END_LINE = "<!-- IGNORE_END -->"
 
 _cwd = os.getcwd()
-__doc__ = __doc__ + \
-    "\nRaw GIT revisions files:\n\t* Accepted: %s\n\t* Rejected: %s\n\n" \
-    "Basic log accepted revisions: %s\n\nWiki-printed accepted revisions: %s\n\n" \
-    "Full release notes wiki page: %s\n" \
-    % (os.path.join(_cwd, ACCEPT_FILE), os.path.join(_cwd, REJECT_FILE),
-       os.path.join(_cwd, ACCEPT_LOG_FILE), os.path.join(_cwd, ACCEPT_PRETTY_FILE),
-       os.path.join(_cwd, ACCEPT_RELEASELOG_FILE))
+__doc__ = (
+    __doc__ + "\nRaw GIT revisions files:\n\t* Accepted: %s\n\t* Rejected: %s\n\n"
+    "Basic log accepted revisions: %s\n\nWiki-printed accepted revisions: %s\n\n"
+    "Full release notes wiki page: %s\n"
+    % (
+        os.path.join(_cwd, ACCEPT_FILE),
+        os.path.join(_cwd, REJECT_FILE),
+        os.path.join(_cwd, ACCEPT_LOG_FILE),
+        os.path.join(_cwd, ACCEPT_PRETTY_FILE),
+        os.path.join(_cwd, ACCEPT_RELEASELOG_FILE),
+    )
+)
 del _cwd
 
 
@@ -71,15 +75,15 @@ class _Getch:
 
 
 class _GetchUnix:
-
     def __init__(self):
-        import tty
         import sys
+        import tty
 
     def __call__(self):
         import sys
-        import tty
         import termios
+        import tty
+
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
         try:
@@ -91,12 +95,12 @@ class _GetchUnix:
 
 
 class _GetchWindows:
-
     def __init__(self):
         import msvcrt
 
     def __call__(self):
         import msvcrt
+
         return msvcrt.getch()
 
 
@@ -128,78 +132,87 @@ if USE_COLOR:
     }
 
     def colorize(msg, color=None):
-        return (color_codes[color] + msg + color_codes['normal'])
+        return color_codes[color] + msg + color_codes['normal']
+
 else:
+
     def colorize(msg, color=None):
         return msg
+
+
 bugfix = ""
 
-
 BUGFIX_CATEGORIES = (
-    ("Objects / Animation / GP", (
-        "Animation",
-        "Constraints",
-        "Grease Pencil",
-        "Objects",
-        "Dependency Graph",
+    (
+        "Objects / Animation / GP",
+        (
+            "Animation",
+            "Constraints",
+            "Grease Pencil",
+            "Objects",
+            "Dependency Graph",
+        ),
     ),
+    (
+        "Data / Geometry",
+        (
+            "Armatures",
+            "Curve/Text Editing",
+            "Mesh Editing",
+            "Meta Editing",
+            "Modifiers",
+            "Material / Texture",
+        ),
     ),
-
-    ("Data / Geometry", (
-        "Armatures",
-        "Curve/Text Editing",
-        "Mesh Editing",
-        "Meta Editing",
-        "Modifiers",
-        "Material / Texture",
+    (
+        "Physics / Simulations / Sculpt / Paint",
+        (
+            "Particles",
+            "Physics / Hair / Simulations",
+            "Sculpting / Painting",
+        ),
     ),
+    (
+        "Image / Video / Render",
+        (
+            "Image / UV Editing",
+            "Masking",
+            "Motion Tracking",
+            "Movie Clip Editor",
+            "Nodes / Compositor",
+            "Render",
+            "Render: Cycles",
+            "Render: Freestyle",
+            "Sequencer",
+        ),
     ),
-
-    ("Physics / Simulations / Sculpt / Paint", (
-        "Particles",
-        "Physics / Hair / Simulations",
-        "Sculpting / Painting",
+    (
+        "UI / Spaces / Transform",
+        (
+            "3D View",
+            "Input (NDOF / 3D Mouse)",
+            "Outliner",
+            "Text Editor",
+            "Transform",
+            "User Interface",
+        ),
     ),
+    (
+        "Game Engine",
+        (),
     ),
-
-    ("Image / Video / Render", (
-        "Image / UV Editing",
-        "Masking",
-        "Motion Tracking",
-        "Movie Clip Editor",
-        "Nodes / Compositor",
-        "Render",
-        "Render: Cycles",
-        "Render: Freestyle",
-        "Sequencer",
-    ),
-    ),
-
-    ("UI / Spaces / Transform", (
-        "3D View",
-        "Input (NDOF / 3D Mouse)",
-        "Outliner",
-        "Text Editor",
-        "Transform",
-        "User Interface",
-    ),
-    ),
-
-    ("Game Engine", (
-    ),
-    ),
-
-    ("System / Misc", (
-        "Audio",
-        "Collada",
-        "File I/O",
-        "Other",
-        "Python",
-        "System",
-    ),
+    (
+        "System / Misc",
+        (
+            "Audio",
+            "Collada",
+            "File I/O",
+            "Other",
+            "Python",
+            "System",
+        ),
     ),
 )
-
 
 sys.stdin = os.fdopen(sys.stdin.fileno(), "rb")
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='surrogateescape', line_buffering=True)
@@ -226,8 +239,12 @@ def print_commit(c):
 
 
 def gen_commit_log(c):
-    return "rB%s   %s   %-30s   %s" % (c.sha1.decode()[:10], c.date.strftime("%Y/%m/%d"),
-                                       c.author, gen_commit_summary(c))
+    return "rB%s   %s   %-30s   %s" % (
+        c.sha1.decode()[:10],
+        c.date.strftime("%Y/%m/%d"),
+        c.author,
+        gen_commit_summary(c),
+    )
 
 
 re_bugify_str = r"T([0-9]{1,})"
@@ -262,10 +279,10 @@ def gen_commit_unprettify(body):
     if body.startswith("* ["):
         end = body.find("]")
         if end > 0:
-            body = body[end + 2:]  # +2 to remove ] itself, and following space.
+            body = body[end + 2 :]  # +2 to remove ] itself, and following space.
     start = body.rfind("({{GitCommit|rB")
     if start > 0:
-        body = body[:start - 1]  # -1 to remove trailing space.
+        body = body[: start - 1]  # -1 to remove trailing space.
     return body
 
 
@@ -304,13 +321,17 @@ def release_log_init(path, source_dir, blender_rev, start_sha1, end_sha1, rstate
     from git_log import GitRepo
 
     if rstate is not None:
-        header = "= Blender %s: Bug Fixes =\n\n" \
-                 "[%s] Changes from revision {{GitCommit|rB%s}} to {{GitCommit|rB%s}}, inclusive.\n\n" \
-                 % (blender_rev, rstate, start_sha1[:10], end_sha1[:10])
+        header = (
+            "= Blender %s: Bug Fixes =\n\n"
+            "[%s] Changes from revision {{GitCommit|rB%s}} to {{GitCommit|rB%s}}, inclusive.\n\n"
+            % (blender_rev, rstate, start_sha1[:10], end_sha1[:10])
+        )
     else:
-        header = "= Blender %s: Bug Fixes =\n\n" \
-                 "Changes from revision {{GitCommit|rB%s}} to {{GitCommit|rB%s}}, inclusive.\n\n" \
-                 % (blender_rev, start_sha1[:10], end_sha1[:10])
+        header = (
+            "= Blender %s: Bug Fixes =\n\n"
+            "Changes from revision {{GitCommit|rB%s}} to {{GitCommit|rB%s}}, inclusive.\n\n"
+            % (blender_rev, start_sha1[:10], end_sha1[:10])
+        )
 
     release_log = {"__HEADER__": header, "__COUNT__": [0, 0], "__RSTATES__": {k: [] for k in rstate_list}}
 
@@ -354,14 +375,17 @@ def release_log_init(path, source_dir, blender_rev, start_sha1, end_sha1, rstate
                         header.append(hl)
 
                     if rstate is not None:
-                        release_log["__HEADER__"] = "%s[%s] Changes from revision {{GitCommit|%s}} to " \
-                                                    "{{GitCommit|%s}}, inclusive (''%s'' branch).\n\n" \
-                                                    "" % ("\n".join(header), rstate,
-                                                          start_sha1[:10], end_sha1[:10], branch)
+                        release_log["__HEADER__"] = (
+                            "%s[%s] Changes from revision {{GitCommit|%s}} to "
+                            "{{GitCommit|%s}}, inclusive (''%s'' branch).\n\n"
+                            "" % ("\n".join(header), rstate, start_sha1[:10], end_sha1[:10], branch)
+                        )
                     else:
-                        release_log["__HEADER__"] = "%sChanges from revision {{GitCommit|%s}} to {{GitCommit|%s}}, " \
-                                                    "inclusive (''%s'' branch).\n\n" \
-                                                    "" % ("\n".join(header), start_sha1[:10], end_sha1[:10], branch)
+                        release_log["__HEADER__"] = (
+                            "%sChanges from revision {{GitCommit|%s}} to {{GitCommit|%s}}, "
+                            "inclusive (''%s'' branch).\n\n"
+                            "" % ("\n".join(header), start_sha1[:10], end_sha1[:10], branch)
+                        )
                     count = release_log["__COUNT__"] = [0, 0]
                     continue
 
@@ -400,7 +424,7 @@ def release_log_init(path, source_dir, blender_rev, start_sha1, end_sha1, rstate
                         if end > 0:
                             rstate = l_rstate[1:end]
                             if rstate in release_log["__RSTATES__"]:
-                                release_log["__RSTATES__"][rstate].append("* %s" % l_rstate[end + 1:].strip())
+                                release_log["__RSTATES__"][rstate].append("* %s" % l_rstate[end + 1 :].strip())
 
     return release_log
 
@@ -463,13 +487,21 @@ def write_release_log(path, release_log, c, cat, rstate, rstate_list):
 
         count = release_log["__COUNT__"]
         f.write("%s\n" % IGNORE_START_LINE)
-        f.write("Total fixed bugs: %d (%d from tracker, %d reported/found by other ways).\n\n"
-                "" % (sum(count), count[0], count[1]))
-        f.write("%s\n%s\n\n" % ("{{Note|Note|Before RC1 (i.e. during regular development of next version in main "
-                                "branch), only fixes of issues which already existed in previous official releases are "
-                                "listed here. Fixes for regressions introduced since last release, or for new "
-                                "features, are '''not''' listed here.<br/>For following RCs and final release, "
-                                "'''all''' backported fixes are listed.}}", IGNORE_END_LINE))
+        f.write(
+            "Total fixed bugs: %d (%d from tracker, %d reported/found by other ways).\n\n"
+            "" % (sum(count), count[0], count[1])
+        )
+        f.write(
+            "%s\n%s\n\n"
+            % (
+                "{{Note|Note|Before RC1 (i.e. during regular development of next version in main "
+                "branch), only fixes of issues which already existed in previous official releases are "
+                "listed here. Fixes for regressions introduced since last release, or for new "
+                "features, are '''not''' listed here.<br/>For following RCs and final release, "
+                "'''all''' backported fixes are listed.}}",
+                IGNORE_END_LINE,
+            )
+        )
 
         f.write("\n".join(lines))
         f.write("\n")
@@ -487,6 +519,7 @@ def write_release_log(path, release_log, c, cat, rstate, rstate_list):
 
 def argparse_create():
     import argparse
+
     global __doc__
 
     # When --help or no args are given, print this help
@@ -494,64 +527,104 @@ def argparse_create():
 
     epilog = "This script is typically used to help write release notes"
 
-    parser = argparse.ArgumentParser(description=usage_text, epilog=epilog,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=usage_text, epilog=epilog, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
+    parser.add_argument("--source", dest="source_dir", metavar='PATH', required=True, help="Path to git repository")
     parser.add_argument(
-        "--source", dest="source_dir",
-        metavar='PATH', required=True,
-        help="Path to git repository")
+        "--range", dest="range_sha1", metavar='SHA1_RANGE', required=False, help="Range to use, eg: 169c95b8..HEAD"
+    )
     parser.add_argument(
-        "--range", dest="range_sha1",
-                        metavar='SHA1_RANGE', required=False,
-                        help="Range to use, eg: 169c95b8..HEAD")
+        "--author", dest="author", metavar='AUTHOR', type=str, required=False, help=("Author(s) to filter commits (")
+    )
     parser.add_argument(
-        "--author", dest="author",
-        metavar='AUTHOR', type=str, required=False,
-        help=("Author(s) to filter commits ("))
+        "--filter",
+        dest="filter_type",
+        metavar='FILTER',
+        type=str,
+        required=False,
+        help=("Method to filter commits in ['BUGFIX', 'NOISE']"),
+    )
     parser.add_argument(
-        "--filter", dest="filter_type",
-        metavar='FILTER', type=str, required=False,
-        help=("Method to filter commits in ['BUGFIX', 'NOISE']"))
+        "--filter-exclude-sha1",
+        dest="filter_exclude_sha1_list",
+        default=[],
+        required=False,
+        type=lambda s: s.split(","),
+        help=("Coma-separated list of commits to ignore/skip"),
+    )
     parser.add_argument(
-        "--filter-exclude-sha1", dest="filter_exclude_sha1_list",
-        default=[], required=False, type=lambda s: s.split(","),
-        help=("Coma-separated list of commits to ignore/skip"))
+        "--filter-exclude-sha1-fromfiles",
+        dest="filter_exclude_sha1_filepaths",
+        default="",
+        required=False,
+        nargs='*',
+        help=("One or more text files storing list of commits to ignore/skip"),
+    )
     parser.add_argument(
-        "--filter-exclude-sha1-fromfiles", dest="filter_exclude_sha1_filepaths",
-        default="", required=False, nargs='*',
-        help=("One or more text files storing list of commits to ignore/skip"))
+        "--filter-exclude-fromreleaselogs",
+        dest="filter_exclude_releaselogs",
+        default="",
+        required=False,
+        nargs='*',
+        help=(
+            "One or more text files storing release logs, to ignore/skip their entries "
+            "(based on message comparison, not commit sha1)"
+        ),
+    )
     parser.add_argument(
-        "--filter-exclude-fromreleaselogs", dest="filter_exclude_releaselogs",
-        default="", required=False, nargs='*',
-        help=("One or more text files storing release logs, to ignore/skip their entries "
-              "(based on message comparison, not commit sha1)"))
+        "--accept-log",
+        dest="accept_log",
+        default=False,
+        action='store_true',
+        required=False,
+        help=("Also output more complete info about accepted commits (summary, author...)"),
+    )
     parser.add_argument(
-        "--accept-log", dest="accept_log",
-        default=False, action='store_true', required=False,
-        help=("Also output more complete info about accepted commits (summary, author...)"))
+        "--accept-pretty",
+        dest="accept_pretty",
+        default=False,
+        action='store_true',
+        required=False,
+        help=("Also output pretty-printed accepted commits (nearly ready for WIKI release notes)"),
+    )
     parser.add_argument(
-        "--accept-pretty", dest="accept_pretty",
-        default=False, action='store_true', required=False,
-        help=("Also output pretty-printed accepted commits (nearly ready for WIKI release notes)"))
+        "--accept-releaselog",
+        dest="accept_releaselog",
+        default=False,
+        action='store_true',
+        required=False,
+        help=("Also output accepted commits as a wiki release log page (adds sorting by categories)"),
+    )
     parser.add_argument(
-        "--accept-releaselog", dest="accept_releaselog",
-        default=False, action='store_true', required=False,
-        help=("Also output accepted commits as a wiki release log page (adds sorting by categories)"))
+        "--blender-rev",
+        dest="blender_rev",
+        default=None,
+        required=False,
+        help=("Blender revision (only used to generate release notes page)"),
+    )
     parser.add_argument(
-        "--blender-rev", dest="blender_rev",
-        default=None, required=False,
-        help=("Blender revision (only used to generate release notes page)"))
+        "--blender-rstate",
+        dest="blender_rstate",
+        default="alpha",
+        required=False,
+        help=(
+            "Blender release state (like alpha, beta, rc1, final, corr_a, corr_b, etc.), "
+            "each revision will be tagged by given one"
+        ),
+    )
     parser.add_argument(
-        "--blender-rstate", dest="blender_rstate",
-        default="alpha", required=False,
-        help=("Blender release state (like alpha, beta, rc1, final, corr_a, corr_b, etc.), "
-              "each revision will be tagged by given one"))
-    parser.add_argument(
-        "--blender-rstate-list", dest="blender_rstate_list",
-        default="", required=False, type=lambda s: s.split(","),
-        help=("Blender release state(s) to additionally list in their own sections "
-              "(e.g. pass 'RC2' to list fixes between RC1 and RC2, ie tagged as RC2, etc.)"))
+        "--blender-rstate-list",
+        dest="blender_rstate_list",
+        default="",
+        required=False,
+        type=lambda s: s.split(","),
+        help=(
+            "Blender release state(s) to additionally list in their own sections "
+            "(e.g. pass 'RC2' to list fixes between RC1 and RC2, ie tagged as RC2, etc.)"
+        ),
+    )
 
     return parser
 
@@ -619,9 +692,15 @@ def main():
     if args.accept_releaselog:
         blender_rev = args.blender_rev or "<UNKNOWN>"
         commits = tuple(GitCommitIter(args.source_dir, args.range_sha1))
-        release_log = release_log_init(ACCEPT_RELEASELOG_FILE, args.source_dir, blender_rev,
-                                       commits[-1].sha1.decode(), commits[0].sha1.decode(),
-                                       args.blender_rstate, args.blender_rstate_list)
+        release_log = release_log_init(
+            ACCEPT_RELEASELOG_FILE,
+            args.source_dir,
+            blender_rev,
+            commits[-1].sha1.decode(),
+            commits[0].sha1.decode(),
+            args.blender_rstate,
+            args.blender_rstate_list,
+        )
         commits = [c for c in commits if match(c)]
     else:
         commits = [c for c in GitCommitIter(args.source_dir, args.range_sha1) if match(c)]
@@ -633,12 +712,17 @@ def main():
     tot_reject = 0
 
     def exit_message():
-        print("  Written",
-              colorize(ACCEPT_FILE, color='green'), "(%d)" % tot_accept,
-              colorize(ACCEPT_LOG_FILE, color='yellow'), "(%d)" % tot_accept,
-              colorize(ACCEPT_PRETTY_FILE, color='blue'), "(%d)" % tot_accept,
-              colorize(REJECT_FILE, color='red'), "(%d)" % tot_reject,
-              )
+        print(
+            "  Written",
+            colorize(ACCEPT_FILE, color='green'),
+            "(%d)" % tot_accept,
+            colorize(ACCEPT_LOG_FILE, color='yellow'),
+            "(%d)" % tot_accept,
+            colorize(ACCEPT_PRETTY_FILE, color='blue'),
+            "(%d)" % tot_accept,
+            colorize(REJECT_FILE, color='red'),
+            "(%d)" % tot_reject,
+        )
 
     def get_cat(ch, max_idx):
         cat = -1
@@ -668,15 +752,16 @@ def main():
 
         accept = False
         while True:
-            print("Space=" + colorize("Accept", 'green'),
-                  "Enter=" + colorize("Skip", 'red'),
-                  "Ctrl+C or X=" + colorize("Exit", color='white'),
-                  "[%d of %d]" % (i + 1, len(commits)),
-                  "(+%d | -%d)" % (tot_accept, tot_reject),
-                  )
+            print(
+                "Space=" + colorize("Accept", 'green'),
+                "Enter=" + colorize("Skip", 'red'),
+                "Ctrl+C or X=" + colorize("Exit", color='white'),
+                "[%d of %d]" % (i + 1, len(commits)),
+                "(+%d | -%d)" % (tot_accept, tot_reject),
+            )
             ch = getch()
 
-            if ch == b'\x03' or ch == b'x':
+            if ch in (b'\x03', b'x'):
                 # Ctrl+C
                 exit_message()
                 print("Goodbye! (%s)" % c.sha1.decode())
@@ -692,25 +777,28 @@ def main():
                     c1 = c2 = None
                     while True:
                         if c1 is None:
-                            print("Select main category (V=View all categories, M=Commit message): \n\t%s"
-                                  "" % " | ".join("[%d] %s" % (i, cat[0]) for i, cat in enumerate(BUGFIX_CATEGORIES)))
+                            print(
+                                "Select main category (V=View all categories, M=Commit message): \n\t%s"
+                                "" % " | ".join("[%d] %s" % (i, cat[0]) for i, cat in enumerate(BUGFIX_CATEGORIES))
+                            )
                         else:
                             main_cat = BUGFIX_CATEGORIES[c1][0]
                             sub_cats = BUGFIX_CATEGORIES[c1][1]
                             if not sub_cats:
                                 break
-                            print("[%d] %s: Select sub category "
-                                  "(V=View all categories, M=Commit message, Enter=No sub-categories, "
-                                  "Backspace=Select other main category): \n\t%s"
-                                  "" % (c1, main_cat,
-                                        " | ".join("[%d] %s" % (i, cat) for i, cat in enumerate(sub_cats))))
+                            print(
+                                "[%d] %s: Select sub category "
+                                "(V=View all categories, M=Commit message, Enter=No sub-categories, "
+                                "Backspace=Select other main category): \n\t%s"
+                                "" % (c1, main_cat, " | ".join("[%d] %s" % (i, cat) for i, cat in enumerate(sub_cats)))
+                            )
 
                         ch = getch()
 
                         if ch == b'\x7f':  # backspace
                             done_main = False
                             break
-                        elif ch == b'\x03' or ch == b'x':
+                        elif ch in (b'\x03', b'x'):
                             # Ctrl+C
                             exit_message()
                             print("Goodbye! (%s)" % c.sha1.decode())
@@ -740,8 +828,9 @@ def main():
                         tot_accept -= 1
                         continue
 
-                    write_release_log(ACCEPT_RELEASELOG_FILE, release_log, c, (c1, c2),
-                                      args.blender_rstate, args.blender_rstate_list)
+                    write_release_log(
+                        ACCEPT_RELEASELOG_FILE, release_log, c, (c1, c2), args.blender_rstate, args.blender_rstate_list
+                    )
                 break
             elif ch == b'\r':
                 log_filepath = REJECT_FILE
