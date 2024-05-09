@@ -75,6 +75,7 @@ class _Getch:
 
 
 class _GetchUnix:
+
     def __init__(self):
         import sys
         import tty
@@ -95,6 +96,7 @@ class _GetchUnix:
 
 
 class _GetchWindows:
+
     def __init__(self):
         import msvcrt
 
