@@ -32,7 +32,7 @@ def other_edges_over_edge(e):
 def verts_from_elem(ele):
     ele_type = type(ele)
     if ele_type is bmesh.types.BMFace:
-        return [l.vert for l in ele.loops]
+        return list(ele.loops)
     elif ele_type is bmesh.types.BMEdge:
         return [v for v in ele.verts]
     elif ele_type is bmesh.types.BMVert:
