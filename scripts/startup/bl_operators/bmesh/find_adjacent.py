@@ -87,20 +87,11 @@ def elems_depth_search(ele_init, depths, other_edges_over_cb, results_init=None)
     # now we have many verts in vert_depths which are attached to elements
     # which are candidates for matching with depths
     if type(ele_init) is bmesh.types.BMFace:
-        test_ele = {
-            l.face for v, depth in vert_depths.items()
-            if depth >= depth_min for l in v.link_loops
-        }
+        test_ele = {l.face for v, depth in vert_depths.items() if depth >= depth_min for l in v.link_loops}
     elif type(ele_init) is bmesh.types.BMEdge:
-        test_ele = {
-            e for v, depth in vert_depths.items()
-            if depth >= depth_min for e in v.link_edges if not e.is_wire
-        }
+        test_ele = {e for v, depth in vert_depths.items() if depth >= depth_min for e in v.link_edges if not e.is_wire}
     else:
-        test_ele = {
-            v for v, depth in vert_depths.items()
-            if depth >= depth_min
-        }
+        test_ele = {v for v, depth in vert_depths.items() if depth >= depth_min}
 
     result_ele = set()
 
@@ -208,8 +199,7 @@ def find_next(ele_dst, ele_src):
             continue
         depth_test = tuple(zip(depth_test_a, depth_test_b))
         # square so a few high values win over many small ones
-        diff_test = sum((abs(a[0] - b[0]) ** 2) +
-                        (abs(a[1] - b[1]) ** 2) for a, b in zip(depth_src, depth_test))
+        diff_test = sum((abs(a[0] - b[0]) ** 2) + (abs(a[1] - b[1]) ** 2) for a, b in zip(depth_src, depth_test))
         if diff_test > diff_best:
             diff_best = diff_test
             ele_best = ele_test
@@ -228,8 +218,7 @@ def find_next(ele_dst, ele_src):
             depth_test_b = elems_depth_measure(ele_src, ele_test, other_edges_over_face)
             if depth_test_a is None or depth_test_b is None:
                 continue
-            depth_accum_test = (
-                sum(depth_test_a) + sum(depth_test_b))
+            depth_accum_test = sum(depth_test_a) + sum(depth_test_b)
 
             if depth_accum_test > depth_accum_max:
                 depth_accum_max = depth_accum_test
@@ -289,8 +278,7 @@ def select_next(bm, report):
             for fn in (pass_fn, set, sum_set, len):
                 uuid_cmp_test = fn(uuid_cmp)
                 ele_pair_next_uuid_test = [
-                    (ele, uuid) for (ele, uuid) in ele_pair_next_uuid
-                    if uuid_cmp_test == fn(uuid)
+                    (ele, uuid) for (ele, uuid) in ele_pair_next_uuid if uuid_cmp_test == fn(uuid)
                 ]
                 if len(ele_pair_next_uuid_test) > 1:
                     ele_pair_next_uuid = ele_pair_next_uuid_test
@@ -322,6 +310,7 @@ def select_next(bm, report):
 
 def select_prev(bm, report):
     import bmesh
+
     for ele in reversed(bm.select_history):
         break
     else:
